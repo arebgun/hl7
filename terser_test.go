@@ -1,9 +1,8 @@
 package hl7
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestNew(t *testing.T) {
