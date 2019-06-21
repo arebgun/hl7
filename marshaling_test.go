@@ -2,17 +2,22 @@ package hl7
 
 import (
 	"testing"
+	"time"
 )
 
 func TestUnmarshal(t *testing.T) {
 	m, _, _ := ParseMessage([]byte(longTestMessageContent))
 
-	patient := struct {
-		FirstName string `hl7:"PID-5-2"`
-		LastName  string `hl7:"PID-5-1"`
+	p := struct {
+		Name struct {
+			First string `hl7:"PID-5-2"`
+			Last  string `hl7:"PID-5-1"`
+		}
+		DOB       time.Time `hl7:"PID-7-1"`
+		RandomInt int
 	}{}
 
-	if err := Unmarshal(m, &patient); err != nil {
+	if err := Unmarshal(m, &p); err != nil {
 		t.Error(err)
 	}
 
@@ -22,11 +27,15 @@ func TestUnmarshal(t *testing.T) {
 	}{
 		{
 			"John",
-			patient.FirstName,
+			p.Name.First,
 		},
 		{
 			"Doe",
-			patient.LastName,
+			p.Name.Last,
+		},
+		{
+			"20001007",
+			p.DOB.Format("20060102"),
 		},
 	}
 
