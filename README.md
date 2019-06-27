@@ -1,6 +1,4 @@
-hl7
-===
-
+[![Build Status](https://travis-ci.org/nwehr/hl7.svg?branch=master)](https://travis-ci.org/nwehr/hl7)
 [![GoDoc](https://godoc.org/fknsrs.biz/p/hl7?status.svg)](https://godoc.org/fknsrs.biz/p/hl7)
 
 Overview
