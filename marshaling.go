@@ -8,12 +8,13 @@ import (
 	"time"
 )
 
-const tagName = "hl7"
-const DefaultTimeFormat = "20060102150405.0000-0700"
+func Unmarshal(m Message, out interface{}) (err error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			err = recovered.(error)
+		}
+	}()
 
-var TimeFormat = DefaultTimeFormat
-
-func Unmarshal(m Message, out interface{}) error {
 	typeOf := reflect.TypeOf(out).Elem()
 	valueOf := reflect.ValueOf(out).Elem()
 
@@ -31,50 +32,35 @@ func Unmarshal(m Message, out interface{}) error {
 		result, ok, err := m.Query(path)
 
 		if !ok {
-			if err != nil {
-				return err
-			}
-
-			return errors.New("Query result not ok")
+			panicOnError(err)
 		}
 
 		switch typeOf.Field(i).Type.Kind() {
 		case reflect.String:
 			valueOf.Field(i).SetString(result)
-		case reflect.Int:
-		case reflect.Int8:
-		case reflect.Int16:
-		case reflect.Int32:
-		case reflect.Int64:
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			value, err := strconv.ParseInt(result, 0, 64)
-			if err != nil {
-				return err
-			}
+			panicOnError(err)
+
 			valueOf.Field(i).SetInt(value)
-		case reflect.Uint:
-		case reflect.Uint8:
-		case reflect.Uint16:
-		case reflect.Uint32:
-		case reflect.Uint64:
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			value, err := strconv.ParseUint(result, 0, 64)
-			if err != nil {
-				return err
-			}
+			panicOnError(err)
+
 			valueOf.Field(i).SetUint(value)
-		case reflect.Float32:
-		case reflect.Float64:
+		case reflect.Float32, reflect.Float64:
 			value, err := strconv.ParseFloat(result, 64)
-			if err != nil {
-				return err
-			}
+			panicOnError(err)
+
 			valueOf.Field(i).SetFloat(value)
 		case reflect.Struct:
 			if typeOf.Field(i).Type.PkgPath() == "time" && typeOf.Field(i).Type.Name() == "Time" {
-				value, err := time.Parse(TimeFormat[:len(result)], result)
-				if err != nil {
-					return err
+				if len(result) > 0 {
+					value, err := time.ParseInLocation(timeFormat[:len(result)], result, Locale)
+					panicOnError(err)
+
+					valueOf.Field(i).Set(reflect.ValueOf(value))
 				}
-				valueOf.Field(i).Set(reflect.ValueOf(value))
 			} else {
 				return errors.New("Could not handle " + typeOf.Field(i).Name)
 			}
@@ -84,4 +70,19 @@ func Unmarshal(m Message, out interface{}) error {
 	}
 
 	return nil
+}
+
+const tagName = "hl7"
+const timeFormat = "20060102150405.0000-0700"
+
+var Locale *time.Location
+
+func panicOnError(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func init() {
+	Locale, _ = time.LoadLocation("")
 }
