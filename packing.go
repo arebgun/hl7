@@ -8,10 +8,10 @@ import (
 	"time"
 )
 
-func Unmarshal(m Message, out interface{}) (err error) {
+func (m Message) Unpack(out interface{}) (err error) {
 	defer func() {
-		if recovered := recover(); recovered != nil {
-			err = recovered.(error)
+		if unknown := recover(); unknown != nil {
+			err = unknown.(error)
 		}
 	}()
 
@@ -23,7 +23,7 @@ func Unmarshal(m Message, out interface{}) (err error) {
 
 		if !ok {
 			if typeOf.Field(i).Type.Kind() == reflect.Struct {
-				Unmarshal(m, valueOf.Field(i).Addr().Interface())
+				m.Unpack(valueOf.Field(i).Addr().Interface())
 			}
 
 			continue

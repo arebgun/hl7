@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestUnmarshal(t *testing.T) {
+func TestUnpack(t *testing.T) {
 	m, _, _ := ParseMessage([]byte(longTestMessageContent))
 
 	p := struct {
@@ -17,7 +17,7 @@ func TestUnmarshal(t *testing.T) {
 		RandomInt int
 	}{}
 
-	if err := Unmarshal(m, &p); err != nil {
+	if err := m.Unpack(&p); err != nil {
 		t.Error(err)
 	}
 
