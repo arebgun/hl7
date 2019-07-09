@@ -85,7 +85,7 @@ func unpack(out interface{}, query func(q *Query) (string, bool), querySlice fun
 
 func (m Message) Unpack(out interface{}) (err error) {
 	query := func(q *Query) (string, bool) {
-		return q.StringFromMessage(m)
+		return m.query(q), true
 	}
 
 	querySlice := func(q *Query) []string {
@@ -97,7 +97,7 @@ func (m Message) Unpack(out interface{}) (err error) {
 
 func (s Segment) Unpack(out interface{}) (err error) {
 	query := func(q *Query) (string, bool) {
-		return q.StringFromSegment(s)
+		return s.query(q), true
 	}
 
 	querySlice := func(q *Query) []string {

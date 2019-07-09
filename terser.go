@@ -93,25 +93,6 @@ func (q Query) StringFromSegment(s Segment) (string, bool) {
 	return string(c[q.SubComponent]), true
 }
 
-func (q Query) SliceFromSegment(s Segment) ([]string, bool) {
-	if !q.HasField {
-		fmt.Println("fields")
-		return s.Fields(), true
-	}
-
-	if !q.HasFieldItem && !q.HasComponent {
-		fmt.Println("field items")
-		return s.Field(q.Field).FieldItems(), true
-	}
-
-	if !q.HasComponent {
-		fmt.Println("components")
-		return s.Field(q.Field).FieldItem(q.FieldItem).Components(), true
-	}
-
-	return s.Field(q.Field).FieldItem(q.FieldItem).Component(q.Component).Subcomponents(), true
-}
-
 func (q Query) Count(m Message) int {
 	if !q.HasSegmentOffset && !q.HasField {
 		return len(m.Segments(q.Segment))

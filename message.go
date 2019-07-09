@@ -47,24 +47,72 @@ func (m Message) Segment(name string, index int) Segment {
 	return nil
 }
 
-func (m Message) Query(query string) (res string, ok bool, err error) {
+func (m Message) Query(query string) (res string, err error) {
 	q, err := ParseQuery(query)
 	if err != nil {
-		return "", false, stackerr.Wrap(err)
+		return "", stackerr.Wrap(err)
 	}
 
-	res, ok = q.StringFromMessage(m)
-
-	return res, ok, nil
+	return m.query(q), nil
 }
 
-func (m Message) QuerySlice(query string) ([]string, bool, error) {
-	q, err := ParseQuery(query)
-	if err != nil {
-		return []string{}, false, stackerr.Wrap(err)
+func (m Message) query(q *Query) string {
+	s := m.Segment(q.Segment, q.SegmentOffset)
+
+	return s.query(q)
+}
+
+func (s Segment) query(q *Query) string {
+	if len(s) <= q.Field+1 {
+		return ""
 	}
 
-	return m.querySlice(q), true, nil
+	if !q.HasField {
+		return s.String()
+	}
+
+	return s.Field(q.Field + 1).query(q)
+}
+
+func (f Field) query(q *Query) string {
+	if len(f) <= q.FieldItem {
+		return f.String()
+	}
+
+	if !q.HasComponent {
+		if q.HasFieldItem {
+			f.FieldItem(q.FieldItem).String()
+		}
+
+		return f.String()
+	}
+
+	return f.FieldItem(q.FieldItem).query(q)
+}
+
+func (f FieldItem) query(q *Query) string {
+	if len(f) <= q.Component {
+		return f.String()
+	}
+
+	return f.Component(q.Component).query(q)
+}
+
+func (c Component) query(q *Query) string {
+	if len(c) <= q.SubComponent {
+		return c.String()
+	}
+
+	return c.Subcomponent(q.SubComponent)
+}
+
+func (m Message) QuerySlice(query string) ([]string, error) {
+	q, err := ParseQuery(query)
+	if err != nil {
+		return []string{}, stackerr.Wrap(err)
+	}
+
+	return m.querySlice(q), nil
 }
 
 func (m Message) querySlice(q *Query) []string {
@@ -90,8 +138,12 @@ func (s Segment) querySlice(q *Query) []string {
 }
 
 func (f Field) querySlice(q *Query) []string {
-	if !q.HasFieldItem {
-		return f.FieldItems()
+	if !q.HasComponent {
+		if q.HasFieldItem {
+			return f.FieldItem(q.FieldItem).Components()
+		}
+
+		return f.FieldItem(0).Components()
 	}
 
 	return f.FieldItem(q.FieldItem).querySlice(q)
@@ -205,6 +257,14 @@ func (f FieldItem) Components() []string {
 
 func (f FieldItem) String() string {
 	return strings.Join(f.Components(), componentSeperator)
+}
+
+func (c Component) Subcomponent(index int) string {
+	if index >= len(c) {
+		return ""
+	}
+
+	return string(c[index])
 }
 
 func (c Component) Subcomponents() []string {
