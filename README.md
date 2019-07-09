@@ -23,7 +23,7 @@ $ go get github.com/nwehr/hl7
 New Features
 ------------
 
-This fork adds the ability to `Unmarshal()` a `Message` into a struct using tags
+This fork adds the ability to `Unpack()` a `Message` or `Segment` into a struct using tags
 
 ```go
 package main
@@ -47,17 +47,19 @@ OBX|1|NM|21612-7^Reported Patient Age^LN||05|mo^month^ANSI|
 func main() {
 	m, _, _ := hl7.ParseMessage([]byte(testMessage))
 
-	patient := struct {
-		Name struct {
-			First string `hl7:"PID-5-2"`
-			Last  string `hl7:"PID-5-1"`
+	result := struct {
+		Patient struct {
+			First  string.   `hl7:"PID-5-2"`
+			Last   string    `hl7:"PID-5-1"`
+			Middle string    `hl7:"PID-5-3"`
+			DOB    time.Time `hl7:"PID-7"`
+			Gender string    `hl7:"PID-8"`
 		}
-		DOB time.Time `hl7:"PID-7-1"`
 	}{}
 
-	hl7.Unmarshal(m, &patient)
+	m.Unpack(&result)
 
-	fmt.Printf("%+v", patient)
+	fmt.Printf("%+v", result)
 }
 
 ```
