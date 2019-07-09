@@ -1,21 +1,26 @@
 package hl7
 
 import (
-	"fmt"
+	_ "fmt"
 )
 
 type Query struct {
-	Segment          string
+	Segment string
+
 	HasSegmentOffset bool
 	SegmentOffset    int
-	HasField         bool
-	Field            int
-	HasFieldOffset   bool
-	FieldOffset      int
-	HasComponent     bool
-	Component        int
-	HasSubComponent  bool
-	SubComponent     int
+
+	HasField bool
+	Field    int
+
+	HasFieldOffset bool
+	FieldOffset    int
+
+	HasComponent bool
+	Component    int
+
+	HasSubComponent bool
+	SubComponent    int
 }
 
 func New(segment string, segmentOffset, field, fieldOffset, component, subComponent int) Query {
@@ -29,46 +34,43 @@ func New(segment string, segmentOffset, field, fieldOffset, component, subCompon
 	}
 }
 
-func (q Query) String() string {
-	s := q.Segment
+// func (q Query) String() string {
+// 	s := q.Segment
 
-	if q.HasSegmentOffset {
-		s += fmt.Sprintf("(%d)", q.SegmentOffset+1)
-	}
+// 	if q.HasSegmentOffset {
+// 		s += fmt.Sprintf("(%d)", q.SegmentOffset+1)
+// 	}
 
-	if !q.HasField {
-		return s
-	}
+// 	if !q.HasField {
+// 		return s
+// 	}
 
-	s += fmt.Sprintf("-%d", q.Field+1)
+// 	s += fmt.Sprintf("-%d", q.Field+1)
 
-	if q.HasFieldOffset {
-		s += fmt.Sprintf("(%d)", q.FieldOffset+1)
-	}
+// 	if q.HasFieldOffset {
+// 		s += fmt.Sprintf("(%d)", q.FieldOffset+1)
+// 	}
 
-	if !q.HasComponent {
-		return s
-	}
+// 	if !q.HasComponent {
+// 		return s
+// 	}
 
-	s += fmt.Sprintf("-%d", q.Component+1)
+// 	s += fmt.Sprintf("-%d", q.Component+1)
 
-	if !q.HasSubComponent {
-		return s
-	}
+// 	if !q.HasSubComponent {
+// 		return s
+// 	}
 
-	s += fmt.Sprintf("-%d", q.SubComponent+1)
+// 	s += fmt.Sprintf("-%d", q.SubComponent+1)
 
-	return s
+// 	return s
+// }
+
+func (q Query) FromMessage(m Message) (string, bool) {
+	return q.FromSegment(m.Segment(q.Segment, q.SegmentOffset))
 }
 
-func (q Query) GetString(m Message) string {
-	s, _ := q.Get(m)
-	return s
-}
-
-func (q Query) Get(m Message) (string, bool) {
-	s := m.Segment(q.Segment, q.SegmentOffset)
-
+func (q Query) FromSegment(s Segment) (string, bool) {
 	if len(s) <= q.Field+1 {
 		return "", false
 	}

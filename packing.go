@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (m Message) Unpack(out interface{}) (err error) {
+func unpack(out interface{}, query func(path string) (string, bool, error)) (err error) {
 	defer func() {
 		if unknown := recover(); unknown != nil {
 			err = unknown.(error)
@@ -23,17 +23,14 @@ func (m Message) Unpack(out interface{}) (err error) {
 
 		if !ok {
 			if typeOf.Field(i).Type.Kind() == reflect.Struct {
-				m.Unpack(valueOf.Field(i).Addr().Interface())
+				unpack(valueOf.Field(i).Addr().Interface(), query)
 			}
 
 			continue
 		}
 
-		result, ok, err := m.Query(path)
-
-		if !ok {
-			panicOnError(err)
-		}
+		result, ok, err := query(path)
+		panicOnError(err)
 
 		switch typeOf.Field(i).Type.Kind() {
 		case reflect.String:
@@ -64,12 +61,40 @@ func (m Message) Unpack(out interface{}) (err error) {
 			} else {
 				return errors.New("Could not handle " + typeOf.Field(i).Name)
 			}
+		case reflect.Slice:
+			switch typeOf.Field(i).Type.Elem().Kind() {
+			case reflect.String:
+
+			}
+
 		default:
 			return errors.New("Could not handle " + typeOf.Field(i).Name)
 		}
 	}
 
 	return nil
+}
+
+func (m Message) Unpack(out interface{}) (err error) {
+	query := func(path string) (string, bool, error) {
+		q, err := ParseQuery(path)
+		result, ok := q.FromMessage(m)
+
+		return result, ok, err
+	}
+
+	return unpack(out, query)
+}
+
+func (s Segment) Unpack(out interface{}) (err error) {
+	query := func(path string) (string, bool, error) {
+		q, err := ParseQuery(path)
+		result, ok := q.FromSegment(s)
+
+		return result, ok, err
+	}
+
+	return unpack(out, query)
 }
 
 const tagName = "hl7"

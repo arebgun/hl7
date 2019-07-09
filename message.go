@@ -2,15 +2,22 @@ package hl7
 
 import (
 	"github.com/facebookgo/stackerr"
+	"strings"
 )
 
-type (
-	Message      []Segment
-	Segment      []Field
-	Field        []FieldItem
-	FieldItem    []Component
-	Component    []Subcomponent
-	Subcomponent string
+type Message []Segment
+type Segment []Field
+type Field []FieldItem
+type FieldItem []Component
+type Component []Subcomponent
+type Subcomponent string
+
+const (
+	segmentSeperator            = "\n"
+	fieldSeperator              = "|"
+	repeatingFieldSeperator     = "~"
+	componentSeperator          = "^"
+	repeatingComponentSeperator = "&"
 )
 
 func (m Message) Segments(name string) []Segment {
@@ -46,7 +53,89 @@ func (m Message) Query(s string) (res string, ok bool, err error) {
 		return "", false, stackerr.Wrap(err)
 	}
 
-	res, ok = q.Get(m)
+	res, ok = q.FromMessage(m)
 
 	return res, ok, nil
+}
+
+func (m Message) ToString() string {
+	items := []string{}
+
+	for _, s := range m {
+		items = append(items, s.ToString())
+	}
+
+	return strings.Join(items, segmentSeperator)
+}
+
+func (s Segment) Field(index int) Field {
+	if index >= len(s) {
+		return nil
+	}
+
+	return s[index]
+}
+
+func (s Segment) ToString() string {
+	items := []string{}
+
+	for _, f := range s {
+		items = append(items, f.ToString())
+	}
+
+	return strings.Join(items, fieldSeperator)
+}
+
+func (f Field) FieldItem(index int) FieldItem {
+	if index >= len(f) {
+		return nil
+	}
+
+	return f[index]
+}
+
+func (f Field) Component(index int) Component {
+	if index >= len(f.FieldItem(0)) {
+		return nil
+	}
+
+	return f.FieldItem(0)[index]
+}
+
+func (f Field) ToString() string {
+	items := []string{}
+
+	for _, fi := range f {
+		items = append(items, fi.ToString())
+	}
+
+	return strings.Join(items, repeatingFieldSeperator)
+}
+
+func (f FieldItem) Component(index int) Component {
+	if index >= len(f) {
+		return nil
+	}
+
+	return f[index]
+}
+
+func (f FieldItem) ToString() string {
+	items := []string{}
+
+	for _, s := range f {
+		items = append(items, s.ToString())
+	}
+
+	return strings.Join(items, componentSeperator)
+}
+
+func (c Component) ToString() string {
+	items := []string{}
+
+	for _, s := range c {
+		items = append(items, string(s))
+	}
+
+	return strings.Join(items, repeatingComponentSeperator)
 }
