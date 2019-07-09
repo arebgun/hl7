@@ -1,7 +1,7 @@
 package hl7
 
 import (
-	_ "fmt"
+	"fmt"
 )
 
 type Query struct {
@@ -13,8 +13,8 @@ type Query struct {
 	HasField bool
 	Field    int
 
-	HasFieldOffset bool
-	FieldOffset    int
+	HasFieldItem bool
+	FieldItem    int
 
 	HasComponent bool
 	Component    int
@@ -23,74 +23,93 @@ type Query struct {
 	SubComponent    int
 }
 
-func New(segment string, segmentOffset, field, fieldOffset, component, subComponent int) Query {
+func New(segment string, segmentOffset, field, fieldItem, component, subComponent int) Query {
 	return Query{
 		Segment:       segment,
 		SegmentOffset: max(segmentOffset-1, 0),
 		Field:         max(field-1, 0),
-		FieldOffset:   max(fieldOffset-1, 0),
+		FieldItem:     max(fieldItem-1, 0),
 		Component:     max(component-1, 0),
 		SubComponent:  max(subComponent-1, 0),
 	}
 }
 
-// func (q Query) String() string {
-// 	s := q.Segment
+func (q Query) String() string {
+	s := q.Segment
 
-// 	if q.HasSegmentOffset {
-// 		s += fmt.Sprintf("(%d)", q.SegmentOffset+1)
-// 	}
+	if q.HasSegmentOffset {
+		s += fmt.Sprintf("(%d)", q.SegmentOffset+1)
+	}
 
-// 	if !q.HasField {
-// 		return s
-// 	}
+	if !q.HasField {
+		return s
+	}
 
-// 	s += fmt.Sprintf("-%d", q.Field+1)
+	s += fmt.Sprintf("-%d", q.Field+1)
 
-// 	if q.HasFieldOffset {
-// 		s += fmt.Sprintf("(%d)", q.FieldOffset+1)
-// 	}
+	if q.HasFieldItem {
+		s += fmt.Sprintf("(%d)", q.FieldItem+1)
+	}
 
-// 	if !q.HasComponent {
-// 		return s
-// 	}
+	if !q.HasComponent {
+		return s
+	}
 
-// 	s += fmt.Sprintf("-%d", q.Component+1)
+	s += fmt.Sprintf("-%d", q.Component+1)
 
-// 	if !q.HasSubComponent {
-// 		return s
-// 	}
+	if !q.HasSubComponent {
+		return s
+	}
 
-// 	s += fmt.Sprintf("-%d", q.SubComponent+1)
+	s += fmt.Sprintf("-%d", q.SubComponent+1)
 
-// 	return s
-// }
-
-func (q Query) FromMessage(m Message) (string, bool) {
-	return q.FromSegment(m.Segment(q.Segment, q.SegmentOffset))
+	return s
 }
 
-func (q Query) FromSegment(s Segment) (string, bool) {
+func (q Query) StringFromMessage(m Message) (string, bool) {
+	return q.StringFromSegment(m.Segment(q.Segment, q.SegmentOffset))
+}
+
+func (q Query) StringFromSegment(s Segment) (string, bool) {
 	if len(s) <= q.Field+1 {
 		return "", false
 	}
-	f := s[q.Field+1]
 
-	if len(f) <= q.FieldOffset {
+	f := s[q.Field+1]
+	if len(f) <= q.FieldItem {
 		return "", false
 	}
-	fi := f[q.FieldOffset]
 
+	fi := f[q.FieldItem]
 	if len(fi) <= q.Component {
 		return "", false
 	}
-	c := fi[q.Component]
 
+	c := fi[q.Component]
 	if len(c) <= q.SubComponent {
 		return "", false
 	}
 
 	return string(c[q.SubComponent]), true
+}
+
+func (q Query) SliceFromSegment(s Segment) ([]string, bool) {
+	if !q.HasField {
+		fmt.Println("fields")
+		return s.Fields(), true
+	}
+
+	if !q.HasFieldItem && !q.HasComponent {
+		fmt.Println("field items")
+		return s.Field(q.Field).FieldItems(), true
+	}
+
+	if !q.HasComponent {
+		fmt.Println("components")
+		return s.Field(q.Field).FieldItem(q.FieldItem).Components(), true
+	}
+
+	return s.Field(q.Field).FieldItem(q.FieldItem).Component(q.Component).Subcomponents(), true
 }
 
 func (q Query) Count(m Message) int {
@@ -107,14 +126,14 @@ func (q Query) Count(m Message) int {
 		return 0
 	}
 	f := s[q.Field+1]
-	if !q.HasFieldOffset && !q.HasComponent {
+	if !q.HasFieldItem && !q.HasComponent {
 		return len(f)
 	}
 
-	if len(f) <= q.FieldOffset {
+	if len(f) <= q.FieldItem {
 		return 0
 	}
-	fi := f[q.FieldOffset]
+	fi := f[q.FieldItem]
 	if !q.HasComponent {
 		return len(fi)
 	}

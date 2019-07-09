@@ -47,22 +47,77 @@ func (m Message) Segment(name string, index int) Segment {
 	return nil
 }
 
-func (m Message) Query(s string) (res string, ok bool, err error) {
-	q, err := ParseQuery(s)
+func (m Message) Query(query string) (res string, ok bool, err error) {
+	q, err := ParseQuery(query)
 	if err != nil {
 		return "", false, stackerr.Wrap(err)
 	}
 
-	res, ok = q.FromMessage(m)
+	res, ok = q.StringFromMessage(m)
 
 	return res, ok, nil
 }
 
-func (m Message) ToString() string {
+func (m Message) QuerySlice(query string) ([]string, bool, error) {
+	q, err := ParseQuery(query)
+	if err != nil {
+		return []string{}, false, stackerr.Wrap(err)
+	}
+
+	return m.querySlice(q), true, nil
+}
+
+func (m Message) querySlice(q *Query) []string {
+	s := m.Segment(q.Segment, q.SegmentOffset)
+	return s.querySlice(q)
+}
+
+func (s Segment) QuerySlice(query string) ([]string, bool, error) {
+	q, err := ParseQuery(query)
+	if err != nil {
+		return []string{}, false, stackerr.Wrap(err)
+	}
+
+	return s.querySlice(q), true, nil
+}
+
+func (s Segment) querySlice(q *Query) []string {
+	if !q.HasField {
+		return s.Fields()
+	}
+
+	return s.Field(q.Field + 1).querySlice(q)
+}
+
+func (f Field) querySlice(q *Query) []string {
+	if !q.HasFieldItem {
+		return f.FieldItems()
+	}
+
+	return f.FieldItem(q.FieldItem).querySlice(q)
+}
+
+func (f FieldItem) querySlice(q *Query) []string {
+	if !q.HasComponent {
+		return f.Components()
+	}
+
+	return f.Component(q.Component + 1).querySlice(q)
+}
+
+func (c Component) querySlice(q *Query) []string {
+	if !q.HasSubComponent {
+		return c.Subcomponents()
+	}
+
+	return []string{string(c[q.SubComponent])}
+}
+
+func (m Message) String() string {
 	items := []string{}
 
 	for _, s := range m {
-		items = append(items, s.ToString())
+		items = append(items, s.String())
 	}
 
 	return strings.Join(items, segmentSeperator)
@@ -76,14 +131,18 @@ func (s Segment) Field(index int) Field {
 	return s[index]
 }
 
-func (s Segment) ToString() string {
+func (s Segment) Fields() []string {
 	items := []string{}
 
 	for _, f := range s {
-		items = append(items, f.ToString())
+		items = append(items, f.String())
 	}
 
-	return strings.Join(items, fieldSeperator)
+	return items
+}
+
+func (s Segment) String() string {
+	return strings.Join(s.Fields(), fieldSeperator)
 }
 
 func (f Field) FieldItem(index int) FieldItem {
@@ -94,6 +153,20 @@ func (f Field) FieldItem(index int) FieldItem {
 	return f[index]
 }
 
+func (f Field) FieldItems() []string {
+	items := []string{}
+
+	for _, fi := range f {
+		items = append(items, fi.String())
+	}
+
+	return items
+}
+
+func (f Field) String() string {
+	return strings.Join(f.FieldItems(), repeatingFieldSeperator)
+}
+
 func (f Field) Component(index int) Component {
 	if index >= len(f.FieldItem(0)) {
 		return nil
@@ -102,14 +175,14 @@ func (f Field) Component(index int) Component {
 	return f.FieldItem(0)[index]
 }
 
-func (f Field) ToString() string {
+func (f Field) Components() []string {
 	items := []string{}
 
-	for _, fi := range f {
-		items = append(items, fi.ToString())
+	for _, c := range f[0] {
+		items = append(items, c.String())
 	}
 
-	return strings.Join(items, repeatingFieldSeperator)
+	return items
 }
 
 func (f FieldItem) Component(index int) Component {
@@ -120,22 +193,30 @@ func (f FieldItem) Component(index int) Component {
 	return f[index]
 }
 
-func (f FieldItem) ToString() string {
+func (f FieldItem) Components() []string {
 	items := []string{}
 
-	for _, s := range f {
-		items = append(items, s.ToString())
+	for _, c := range f {
+		items = append(items, c.String())
 	}
 
-	return strings.Join(items, componentSeperator)
+	return items
 }
 
-func (c Component) ToString() string {
+func (f FieldItem) String() string {
+	return strings.Join(f.Components(), componentSeperator)
+}
+
+func (c Component) Subcomponents() []string {
 	items := []string{}
 
 	for _, s := range c {
 		items = append(items, string(s))
 	}
 
-	return strings.Join(items, repeatingComponentSeperator)
+	return items
+}
+
+func (c Component) String() string {
+	return strings.Join(c.Subcomponents(), repeatingComponentSeperator)
 }

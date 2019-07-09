@@ -2,13 +2,13 @@ package hl7
 
 import (
 	"errors"
-	// "fmt"
+	_ "fmt"
 	"reflect"
 	"strconv"
 	"time"
 )
 
-func unpack(out interface{}, query func(path string) (string, bool, error)) (err error) {
+func unpack(out interface{}, query func(q *Query) (string, bool), querySlice func(q *Query) []string) (err error) {
 	defer func() {
 		if unknown := recover(); unknown != nil {
 			err = unknown.(error)
@@ -23,34 +23,47 @@ func unpack(out interface{}, query func(path string) (string, bool, error)) (err
 
 		if !ok {
 			if typeOf.Field(i).Type.Kind() == reflect.Struct {
-				unpack(valueOf.Field(i).Addr().Interface(), query)
+				unpack(valueOf.Field(i).Addr().Interface(), query, querySlice)
 			}
 
 			continue
 		}
 
-		result, ok, err := query(path)
+		q, err := ParseQuery(path)
 		panicOnError(err)
 
 		switch typeOf.Field(i).Type.Kind() {
 		case reflect.String:
+			result, _ := query(q)
 			valueOf.Field(i).SetString(result)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			result, _ := query(q)
 			value, err := strconv.ParseInt(result, 0, 64)
 			panicOnError(err)
 
 			valueOf.Field(i).SetInt(value)
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			result, _ := query(q)
 			value, err := strconv.ParseUint(result, 0, 64)
 			panicOnError(err)
 
 			valueOf.Field(i).SetUint(value)
 		case reflect.Float32, reflect.Float64:
+			result, _ := query(q)
 			value, err := strconv.ParseFloat(result, 64)
 			panicOnError(err)
 
 			valueOf.Field(i).SetFloat(value)
+		case reflect.Slice, reflect.Array:
+			switch typeOf.Field(i).Type.Elem().Kind() {
+			case reflect.String:
+				result := querySlice(q)
+				valueOf.Field(i).Set(reflect.ValueOf(result))
+			default:
+				return errors.New("Could not handle " + typeOf.Field(i).Name)
+			}
 		case reflect.Struct:
+			result, _ := query(q)
 			if typeOf.Field(i).Type.PkgPath() == "time" && typeOf.Field(i).Type.Name() == "Time" {
 				if len(result) > 0 {
 					value, err := time.ParseInLocation(timeFormat[:len(result)], result, Locale)
@@ -60,11 +73,6 @@ func unpack(out interface{}, query func(path string) (string, bool, error)) (err
 				}
 			} else {
 				return errors.New("Could not handle " + typeOf.Field(i).Name)
-			}
-		case reflect.Slice:
-			switch typeOf.Field(i).Type.Elem().Kind() {
-			case reflect.String:
-
 			}
 
 		default:
@@ -76,25 +84,27 @@ func unpack(out interface{}, query func(path string) (string, bool, error)) (err
 }
 
 func (m Message) Unpack(out interface{}) (err error) {
-	query := func(path string) (string, bool, error) {
-		q, err := ParseQuery(path)
-		result, ok := q.FromMessage(m)
-
-		return result, ok, err
+	query := func(q *Query) (string, bool) {
+		return q.StringFromMessage(m)
 	}
 
-	return unpack(out, query)
+	querySlice := func(q *Query) []string {
+		return m.querySlice(q)
+	}
+
+	return unpack(out, query, querySlice)
 }
 
 func (s Segment) Unpack(out interface{}) (err error) {
-	query := func(path string) (string, bool, error) {
-		q, err := ParseQuery(path)
-		result, ok := q.FromSegment(s)
-
-		return result, ok, err
+	query := func(q *Query) (string, bool) {
+		return q.StringFromSegment(s)
 	}
 
-	return unpack(out, query)
+	querySlice := func(q *Query) []string {
+		return s.querySlice(q)
+	}
+
+	return unpack(out, query, querySlice)
 }
 
 const tagName = "hl7"

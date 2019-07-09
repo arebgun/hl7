@@ -32,7 +32,7 @@ func ParseQuery(s string) (*Query, error) {
 		return &q, nil
 	}
 
-	if err := parseQueryParen(s, &offset, &q.HasFieldOffset, &q.FieldOffset); err != nil {
+	if err := parseQueryParen(s, &offset, &q.HasFieldItem, &q.FieldItem); err != nil {
 		return nil, err
 	}
 	if offset == len(s) {
