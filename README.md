@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/nwehr/hl7.svg?branch=master)](https://travis-ci.org/nwehr/hl7)
+[![Coverage Status](https://coveralls.io/repos/github/nwehr/hl7/badge.svg?branch=master)](https://coveralls.io/github/nwehr/hl7?branch=master)
 [![GoDoc](https://godoc.org/fknsrs.biz/p/hl7?status.svg)](https://godoc.org/fknsrs.biz/p/hl7)
 
 Overview
