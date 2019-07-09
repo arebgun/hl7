@@ -66,33 +66,6 @@ func (q Query) String() string {
 	return s
 }
 
-func (q Query) StringFromMessage(m Message) (string, bool) {
-	return q.StringFromSegment(m.Segment(q.Segment, q.SegmentOffset))
-}
-
-func (q Query) StringFromSegment(s Segment) (string, bool) {
-	if len(s) <= q.Field+1 {
-		return "", false
-	}
-
-	f := s[q.Field+1]
-	if len(f) <= q.FieldItem {
-		return "", false
-	}
-
-	fi := f[q.FieldItem]
-	if len(fi) <= q.Component {
-		return "", false
-	}
-
-	c := fi[q.Component]
-	if len(c) <= q.SubComponent {
-		return "", false
-	}
-
-	return string(c[q.SubComponent]), true
-}
-
 func (q Query) Count(m Message) int {
 	if !q.HasSegmentOffset && !q.HasField {
 		return len(m.Segments(q.Segment))

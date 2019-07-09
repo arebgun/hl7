@@ -47,19 +47,17 @@ OBX|1|NM|21612-7^Reported Patient Age^LN||05|mo^month^ANSI|
 func main() {
 	m, _, _ := hl7.ParseMessage([]byte(testMessage))
 
-	result := struct {
-		Patient struct {
-			First  string.   `hl7:"PID-5-2"`
-			Last   string    `hl7:"PID-5-1"`
-			Middle string    `hl7:"PID-5-3"`
-			DOB    time.Time `hl7:"PID-7"`
-			Gender string    `hl7:"PID-8"`
-		}
+	patient := struct {
+		First  string    `hl7:"PID-5-2"`
+		Last   string    `hl7:"PID-5-1"`
+		Middle string    `hl7:"PID-5-3"`
+		DOB    time.Time `hl7:"PID-7"`
+		Gender string    `hl7:"PID-8"`
 	}{}
 
-	m.Unpack(&result)
+	m.Unpack(&patient)
 
-	fmt.Printf("%+v", result)
+	fmt.Printf("%+v", patient)
 }
 
 ```
