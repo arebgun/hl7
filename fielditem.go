@@ -14,11 +14,12 @@ func (f FieldItem) query(q *Query) string {
 
 func (f FieldItem) querySlice(q *Query) []string {
 	if !q.HasComponent {
-		return f.Components()
+		return f.SliceOfStrings()
 	}
 
 	return f.Component(q.Component + 1).querySlice(q)
 }
+
 func (f FieldItem) Component(index int) Component {
 	if index >= len(f) {
 		return nil
@@ -27,16 +28,16 @@ func (f FieldItem) Component(index int) Component {
 	return f[index]
 }
 
-func (f FieldItem) Components() []string {
-	items := []string{}
-
-	for _, c := range f {
-		items = append(items, c.String())
-	}
-
-	return items
+func (f FieldItem) String() string {
+	return strings.Join(f.SliceOfStrings(), componentSeperator)
 }
 
-func (f FieldItem) String() string {
-	return strings.Join(f.Components(), componentSeperator)
+func (f FieldItem) SliceOfStrings() []string {
+	strs := []string{}
+
+	for _, c := range f {
+		strs = append(strs, c.String())
+	}
+
+	return strs
 }

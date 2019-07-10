@@ -4,8 +4,6 @@ import (
 	"github.com/facebookgo/stackerr"
 )
 
-type ErrInvalidQuery error
-
 func ParseQuery(s string) (*Query, error) {
 	var q Query
 

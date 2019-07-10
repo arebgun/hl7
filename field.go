@@ -23,10 +23,10 @@ func (f Field) query(q *Query) string {
 func (f Field) querySlice(q *Query) []string {
 	if !q.HasComponent {
 		if q.HasFieldItem {
-			return f.FieldItem(q.FieldItem).Components()
+			return f.FieldItem(q.FieldItem).SliceOfStrings()
 		}
 
-		return f.FieldItem(0).Components()
+		return f.FieldItem(0).SliceOfStrings()
 	}
 
 	return f.FieldItem(q.FieldItem).querySlice(q)
@@ -40,16 +40,16 @@ func (f Field) FieldItem(index int) FieldItem {
 	return f[index]
 }
 
-func (f Field) FieldItems() []string {
-	items := []string{}
-
-	for _, fi := range f {
-		items = append(items, fi.String())
-	}
-
-	return items
+func (f Field) String() string {
+	return strings.Join(f.SliceOfStrings(), repeatingFieldSeperator)
 }
 
-func (f Field) String() string {
-	return strings.Join(f.FieldItems(), repeatingFieldSeperator)
+func (f Field) SliceOfStrings() []string {
+	strs := []string{}
+
+	for _, fi := range f {
+		strs = append(strs, fi.String())
+	}
+
+	return strs
 }

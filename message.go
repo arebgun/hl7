@@ -77,11 +77,15 @@ func (m Message) querySlice(q *Query) []string {
 }
 
 func (m Message) String() string {
-	items := []string{}
+	return strings.Join(m.SliceOfStrings(), segmentSeperator)
+}
+
+func (m Message) SliceOfStrings() []string {
+	strs := []string{}
 
 	for _, s := range m {
-		items = append(items, s.String())
+		strs = append(strs, s.String())
 	}
 
-	return strings.Join(items, segmentSeperator)
+	return strs
 }

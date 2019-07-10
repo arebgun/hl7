@@ -23,7 +23,7 @@ type Query struct {
 	SubComponent    int
 }
 
-func New(segment string, segmentOffset, field, fieldItem, component, subComponent int) Query {
+func NewQuery(segment string, segmentOffset, field, fieldItem, component, subComponent int) Query {
 	return Query{
 		Segment:       segment,
 		SegmentOffset: max(segmentOffset-1, 0),
