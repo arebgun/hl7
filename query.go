@@ -106,3 +106,11 @@ func (q Query) Count(m Message) int {
 
 	return 1
 }
+
+func (q Query) Spew() {
+	println("HasSegmentOffset: ", q.HasSegmentOffset)
+	println("HasField: ", q.HasField)
+	println("HasFieldItem: ", q.HasFieldItem)
+	println("HasComponent: ", q.HasComponent)
+	println("HasSubComponent: ", q.HasSubComponent)
+}

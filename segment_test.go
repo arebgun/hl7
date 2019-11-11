@@ -1,8 +1,6 @@
 package hl7
 
 import (
-	// "fmt"
-	// "reflect"
 	"strings"
 	"testing"
 )
@@ -44,5 +42,17 @@ func TestSliceOfStrings(t *testing.T) {
 	}
 }
 
-// [PID  0493575^^^2^ID 1 454721  DOE^JOHN^^^ DOE^JOHN^^^ 19480203 M  B 254 MYSTREET AVE^^MYTOWN^OH^44123^USA  (216)123-4567   M NON 400003403~1129086]
-// [PID  0493575^^^2^ID 1 454721  DOE^JOHN^^^ DOE^JOHN^^^ 19480203 M  B 254 MYSTREET AVE^^MYTOWN^OH^44123^USA  (216)123-4567   M MON 400003403~1129086]
+func TestSetString(t *testing.T) {
+	m, _, _ := ParseMessage([]byte(message))
+
+	expectedLastName := "Wehr"
+
+	s := m.Segment("PID", 0)
+	s.SetString("PID-5-1", expectedLastName)
+
+	lastName, _ := s.Query("PID-5-1")
+
+	if expectedLastName != lastName {
+		t.Errorf("expected %s; got %s", expectedLastName, lastName)
+	}
+}

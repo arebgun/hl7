@@ -28,6 +28,14 @@ func (f FieldItem) Component(index int) Component {
 	return f[index]
 }
 
+func (f FieldItem) ComponentPtr(index int) *Component {
+	if index >= len(f) {
+		return nil
+	}
+
+	return &f[index]
+}
+
 func (f FieldItem) String() string {
 	return strings.Join(f.SliceOfStrings(), componentSeperator)
 }
@@ -40,4 +48,13 @@ func (f FieldItem) SliceOfStrings() []string {
 	}
 
 	return strs
+}
+
+func (f *FieldItem) setString(q *Query, value string) error {
+	if q.HasComponent {
+		return f.ComponentPtr(q.Component).setString(q, value)
+	}
+
+	*f = FieldItem{Component{Subcomponent(value)}}
+	return nil
 }

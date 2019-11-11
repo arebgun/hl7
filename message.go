@@ -1,6 +1,8 @@
 package hl7
 
 import (
+	_ "fmt"
+	_ "github.com/davecgh/go-spew/spew"
 	"github.com/facebookgo/stackerr"
 	"strings"
 )
@@ -38,6 +40,21 @@ func (m Message) Segment(name string, index int) Segment {
 		if string(s[0][0][0][0]) == name {
 			if i == index {
 				return s
+			}
+
+			i++
+		}
+	}
+
+	return nil
+}
+
+func (m Message) SegmentPtr(name string, index int) *Segment {
+	i := 0
+	for _, s := range m {
+		if string(s[0][0][0][0]) == name {
+			if i == index {
+				return &s
 			}
 
 			i++
@@ -88,4 +105,36 @@ func (m Message) SliceOfStrings() []string {
 	}
 
 	return strs
+}
+
+func (m *Message) SetString(query string, value string) error {
+	q, err := ParseQuery(query)
+
+	if err != nil {
+		return stackerr.Wrap(err)
+	}
+
+	// queryStruct := struct {
+	// 	HasSegmentOffet bool
+	// 	HasField        bool
+	// 	HasFieldItem    bool
+	// 	HasComponent    bool
+	// 	HasSubcomponent bool
+	// }{
+	// 	q.HasSegmentOffset,
+	// 	q.HasField,
+	// 	q.HasFieldItem,
+	// 	q.HasComponent,
+	// 	q.HasSubComponent,
+	// }
+
+	// spew.Dump(queryStruct)
+
+	return m.setString(q, value)
+}
+
+func (m *Message) setString(q *Query, value string) error {
+	m.SegmentPtr(q.Segment, q.SegmentOffset).setString(q, value)
+
+	return nil
 }

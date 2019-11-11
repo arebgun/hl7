@@ -20,14 +20,6 @@ func (c Component) querySlice(q *Query) []string {
 	return []string{string(c[q.SubComponent])}
 }
 
-func (c Component) Subcomponent(index int) string {
-	if index >= len(c) {
-		return ""
-	}
-
-	return string(c[index])
-}
-
 func (c Component) String() string {
 	return strings.Join(c.SliceOfStrings(), repeatingComponentSeperator)
 }
@@ -40,4 +32,23 @@ func (c Component) SliceOfStrings() []string {
 	}
 
 	return strs
+}
+
+func (c Component) Subcomponent(index int) string {
+	if index >= len(c) {
+		return ""
+	}
+
+	return string(c[index])
+}
+
+func (c *Component) setString(q *Query, value string) error {
+	if q.HasSubComponent {
+		(*c)[q.SubComponent] = Subcomponent(value)
+	} else {
+		*c = nil
+		*c = append(*c, Subcomponent(value))
+	}
+
+	return nil
 }

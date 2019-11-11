@@ -1,6 +1,7 @@
 package hl7
 
 import (
+	"errors"
 	"github.com/facebookgo/stackerr"
 	"strings"
 )
@@ -53,6 +54,14 @@ func (s Segment) Field(index int) Field {
 	return s[index]
 }
 
+func (s Segment) FieldPtr(index int) *Field {
+	if index >= len(s) {
+		return nil
+	}
+
+	return &s[index]
+}
+
 func (s Segment) String() string {
 	return strings.Join(s.SliceOfStrigs(), fieldSeperator)
 }
@@ -65,4 +74,26 @@ func (s Segment) SliceOfStrigs() []string {
 	}
 
 	return strs
+}
+
+func (s *Segment) SetString(query string, value string) error {
+	q, err := ParseQuery(query)
+
+	if err != nil {
+		return stackerr.Wrap(err)
+	}
+
+	return s.setString(q, value)
+}
+
+func (s *Segment) setString(q *Query, value string) error {
+	if len(*s) <= q.Field+1 {
+		return errors.New("Not enough fields in segment")
+	}
+
+	if !q.HasField {
+		return errors.New("No field defined")
+	}
+
+	return s.FieldPtr(q.Field+1).setString(q, value)
 }

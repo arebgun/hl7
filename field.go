@@ -1,6 +1,7 @@
 package hl7
 
 import (
+	"errors"
 	"strings"
 )
 
@@ -40,6 +41,14 @@ func (f Field) FieldItem(index int) FieldItem {
 	return f[index]
 }
 
+func (f Field) FieldItemPtr(index int) *FieldItem {
+	if index >= len(f) {
+		return nil
+	}
+
+	return &f[index]
+}
+
 func (f Field) String() string {
 	return strings.Join(f.SliceOfStrings(), repeatingFieldSeperator)
 }
@@ -52,4 +61,21 @@ func (f Field) SliceOfStrings() []string {
 	}
 
 	return strs
+}
+
+func (f *Field) setString(q *Query, value string) error {
+	if len(*f) <= q.FieldItem {
+		return errors.New("Not enough field items")
+	}
+
+	if !q.HasFieldItem {
+		if q.HasComponent {
+			return (*f)[0].ComponentPtr(q.Component).setString(q, value)
+		}
+
+		(*f)[0] = FieldItem{Component{Subcomponent(value)}}
+		return nil
+	}
+
+	return f.FieldItemPtr(q.FieldItem).setString(q, value)
 }
