@@ -5,19 +5,19 @@ import (
 )
 
 func (c Component) query(q *Query) string {
-	if len(c) <= q.SubComponent {
+	if len(c) <= q.RepeatedComponent {
 		return c.String()
 	}
 
-	return c.Subcomponent(q.SubComponent)
+	return c.RepeatedComponent(q.RepeatedComponent)
 }
 
 func (c Component) querySlice(q *Query) []string {
-	if !q.HasSubComponent {
+	if !q.HasRepeatedComponent {
 		return c.SliceOfStrings()
 	}
 
-	return []string{string(c[q.SubComponent])}
+	return []string{string(c[q.RepeatedComponent])}
 }
 
 func (c Component) String() string {
@@ -34,7 +34,7 @@ func (c Component) SliceOfStrings() []string {
 	return strs
 }
 
-func (c Component) Subcomponent(index int) string {
+func (c Component) RepeatedComponent(index int) string {
 	if index >= len(c) {
 		return ""
 	}
@@ -43,10 +43,10 @@ func (c Component) Subcomponent(index int) string {
 }
 
 func (c Component) setString(q *Query, value string) (Component, error) {
-	for len(c) < q.SubComponent+1 {
-		c = append(c, Subcomponent(""))
+	for len(c) < q.RepeatedComponent+1 {
+		c = append(c, RepeatedComponent(""))
 	}
 
-	c[q.SubComponent] = Subcomponent(value)
+	c[q.RepeatedComponent] = RepeatedComponent(value)
 	return c, nil
 }

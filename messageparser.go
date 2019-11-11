@@ -17,7 +17,7 @@ type (
 )
 
 type Delimiters struct {
-	Field, Component, Repeat, Escape, Subcomponent byte
+	Field, Component, Repeat, Escape, RepeatedComponent byte
 }
 
 // ParseMessage takes input as a `[]byte`, and returns the whole message, the
@@ -59,17 +59,17 @@ func ParseMessage(buf []byte) (Message, *Delimiters, error) {
 	d := Delimiters{fs, cs, rs, ec, ss}
 
 	// These are the variables we'll be working with. We reuse these variables a
-	// lot in the parsing loop below. A `FieldItem` is one instance of a field
+	// lot in the parsing loop below. A `RepeatedField` is one instance of a field
 	// value - the HL7 standard calls this a "repetition," but I found that
-	// `FieldItem` was easier to think about.
+	// `RepeatedField` was easier to think about.
 
 	var (
-		message   Message
-		segment   Segment
-		field     Field
-		fieldItem FieldItem
-		component Component
-		s         []byte
+		message       Message
+		segment       Segment
+		field         Field
+		repeatedField RepeatedField
+		component     Component
+		s             []byte
 	)
 
 	// We manually construct the first few fields of the message, as we know
@@ -77,9 +77,9 @@ func ParseMessage(buf []byte) (Message, *Delimiters, error) {
 	// code to parse these weird fields out.
 
 	segment = Segment{
-		Field{FieldItem{Component{Subcomponent("MSH")}}},
-		Field{FieldItem{Component{Subcomponent(buf[3])}}},
-		Field{FieldItem{Component{Subcomponent(string(buf[4:8]))}}},
+		Field{RepeatedField{Component{RepeatedComponent("MSH")}}},
+		Field{RepeatedField{Component{RepeatedComponent(buf[3])}}},
+		Field{RepeatedField{Component{RepeatedComponent(string(buf[4:8]))}}},
 	}
 
 	// This is a sanity check for when the message consists only of a header.
@@ -110,7 +110,7 @@ func ParseMessage(buf []byte) (Message, *Delimiters, error) {
 
 	commitBuffer := func(force bool) {
 		if s != nil || force {
-			component = append(component, Subcomponent(unescape(s, &d)))
+			component = append(component, RepeatedComponent(unescape(s, &d)))
 			s = nil
 		}
 	}
@@ -119,22 +119,22 @@ func ParseMessage(buf []byte) (Message, *Delimiters, error) {
 		commitBuffer(false)
 
 		if component != nil || force {
-			fieldItem = append(fieldItem, component)
+			repeatedField = append(repeatedField, component)
 			component = nil
 		}
 	}
 
-	commitFieldItem := func(force bool) {
+	commitRepeatedField := func(force bool) {
 		commitComponent(false)
 
-		if fieldItem != nil || force {
-			field = append(field, fieldItem)
-			fieldItem = nil
+		if repeatedField != nil || force {
+			field = append(field, repeatedField)
+			repeatedField = nil
 		}
 	}
 
 	commitField := func(force bool) {
-		commitFieldItem(false)
+		commitRepeatedField(false)
 
 		if field != nil || force {
 			segment = append(segment, field)
@@ -172,7 +172,7 @@ func ParseMessage(buf []byte) (Message, *Delimiters, error) {
 			commitField(true)
 		case rs:
 			sawNewline = false
-			commitFieldItem(true)
+			commitRepeatedField(true)
 		case cs:
 			sawNewline = false
 			commitComponent(true)
@@ -213,7 +213,7 @@ func unescape(b []byte, d *Delimiters) []byte {
 				r[j] = d.Component
 				i++
 			case 'T':
-				r[j] = d.Subcomponent
+				r[j] = d.RepeatedComponent
 				i++
 			case 'R':
 				r[j] = d.Repeat

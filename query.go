@@ -13,24 +13,24 @@ type Query struct {
 	HasField bool
 	Field    int
 
-	HasFieldItem bool
-	FieldItem    int
+	HasRepeatedField bool
+	RepeatedField    int
 
 	HasComponent bool
 	Component    int
 
-	HasSubComponent bool
-	SubComponent    int
+	HasRepeatedComponent bool
+	RepeatedComponent    int
 }
 
-func NewQuery(segment string, segmentOffset, field, fieldItem, component, subComponent int) Query {
+func NewQuery(segment string, segmentOffset, field, repeatedField, component, repeatedComponent int) Query {
 	return Query{
-		Segment:       segment,
-		SegmentOffset: max(segmentOffset-1, 0),
-		Field:         max(field-1, 0),
-		FieldItem:     max(fieldItem-1, 0),
-		Component:     max(component-1, 0),
-		SubComponent:  max(subComponent-1, 0),
+		Segment:           segment,
+		SegmentOffset:     max(segmentOffset-1, 0),
+		Field:             max(field-1, 0),
+		RepeatedField:     max(repeatedField-1, 0),
+		Component:         max(component-1, 0),
+		RepeatedComponent: max(repeatedComponent-1, 0),
 	}
 }
 
@@ -47,8 +47,8 @@ func (q Query) String() string {
 
 	s += fmt.Sprintf("-%d", q.Field+1)
 
-	if q.HasFieldItem {
-		s += fmt.Sprintf("(%d)", q.FieldItem+1)
+	if q.HasRepeatedField {
+		s += fmt.Sprintf("(%d)", q.RepeatedField+1)
 	}
 
 	if !q.HasComponent {
@@ -57,11 +57,11 @@ func (q Query) String() string {
 
 	s += fmt.Sprintf("-%d", q.Component+1)
 
-	if !q.HasSubComponent {
+	if !q.HasRepeatedComponent {
 		return s
 	}
 
-	s += fmt.Sprintf("-%d", q.SubComponent+1)
+	s += fmt.Sprintf("-%d", q.RepeatedComponent+1)
 
 	return s
 }
@@ -80,14 +80,14 @@ func (q Query) Count(m Message) int {
 		return 0
 	}
 	f := s[q.Field+1]
-	if !q.HasFieldItem && !q.HasComponent {
+	if !q.HasRepeatedField && !q.HasComponent {
 		return len(f)
 	}
 
-	if len(f) <= q.FieldItem {
+	if len(f) <= q.RepeatedField {
 		return 0
 	}
-	fi := f[q.FieldItem]
+	fi := f[q.RepeatedField]
 	if !q.HasComponent {
 		return len(fi)
 	}
@@ -96,11 +96,11 @@ func (q Query) Count(m Message) int {
 		return 0
 	}
 	c := fi[q.Component]
-	if !q.HasSubComponent {
+	if !q.HasRepeatedComponent {
 		return len(c)
 	}
 
-	if len(c) <= q.SubComponent {
+	if len(c) <= q.RepeatedComponent {
 		return 0
 	}
 
@@ -110,7 +110,7 @@ func (q Query) Count(m Message) int {
 func (q Query) Spew() {
 	println("HasSegmentOffset: ", q.HasSegmentOffset)
 	println("HasField: ", q.HasField)
-	println("HasFieldItem: ", q.HasFieldItem)
+	println("HasRepeatedField: ", q.HasRepeatedField)
 	println("HasComponent: ", q.HasComponent)
-	println("HasSubComponent: ", q.HasSubComponent)
+	println("HasRepeatedComponent: ", q.HasRepeatedComponent)
 }

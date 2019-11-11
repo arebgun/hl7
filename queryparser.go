@@ -30,7 +30,7 @@ func ParseQuery(s string) (*Query, error) {
 		return &q, nil
 	}
 
-	if err := parseQueryParen(s, &offset, &q.HasFieldItem, &q.FieldItem); err != nil {
+	if err := parseQueryParen(s, &offset, &q.HasRepeatedField, &q.RepeatedField); err != nil {
 		return nil, err
 	}
 	if offset == len(s) {
@@ -44,7 +44,7 @@ func ParseQuery(s string) (*Query, error) {
 		return &q, nil
 	}
 
-	if err := parseQueryNumber(s, &offset, &q.HasSubComponent, &q.SubComponent); err != nil {
+	if err := parseQueryNumber(s, &offset, &q.HasRepeatedComponent, &q.RepeatedComponent); err != nil {
 		return nil, err
 	}
 	if offset == len(s) {

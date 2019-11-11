@@ -10,10 +10,10 @@ import (
 
 type Message []Segment
 type Segment []Field
-type Field []FieldItem
-type FieldItem []Component
-type Component []Subcomponent
-type Subcomponent string
+type Field []RepeatedField
+type RepeatedField []Component
+type Component []RepeatedComponent
+type RepeatedComponent string
 
 const (
 	segmentSeperator            = "\n"

@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-func (f FieldItem) query(q *Query) string {
+func (f RepeatedField) query(q *Query) string {
 	if len(f) <= q.Component {
 		return f.String()
 	}
@@ -12,7 +12,7 @@ func (f FieldItem) query(q *Query) string {
 	return f.Component(q.Component).query(q)
 }
 
-func (f FieldItem) querySlice(q *Query) []string {
+func (f RepeatedField) querySlice(q *Query) []string {
 	if !q.HasComponent {
 		return f.SliceOfStrings()
 	}
@@ -20,7 +20,7 @@ func (f FieldItem) querySlice(q *Query) []string {
 	return f.Component(q.Component + 1).querySlice(q)
 }
 
-func (f FieldItem) Component(index int) Component {
+func (f RepeatedField) Component(index int) Component {
 	if index >= len(f) {
 		return nil
 	}
@@ -28,7 +28,7 @@ func (f FieldItem) Component(index int) Component {
 	return f[index]
 }
 
-func (f FieldItem) ComponentPtr(index int) *Component {
+func (f RepeatedField) ComponentPtr(index int) *Component {
 	if index >= len(f) {
 		return nil
 	}
@@ -36,11 +36,11 @@ func (f FieldItem) ComponentPtr(index int) *Component {
 	return &f[index]
 }
 
-func (f FieldItem) String() string {
+func (f RepeatedField) String() string {
 	return strings.Join(f.SliceOfStrings(), componentSeperator)
 }
 
-func (f FieldItem) SliceOfStrings() []string {
+func (f RepeatedField) SliceOfStrings() []string {
 	strs := []string{}
 
 	for _, c := range f {
@@ -50,7 +50,7 @@ func (f FieldItem) SliceOfStrings() []string {
 	return strs
 }
 
-func (f FieldItem) setString(q *Query, value string) (FieldItem, error) {
+func (f RepeatedField) setString(q *Query, value string) (RepeatedField, error) {
 	var err error
 
 	for len(f) < q.Component+1 {

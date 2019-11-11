@@ -6,34 +6,34 @@ import (
 )
 
 func (f Field) query(q *Query) string {
-	if len(f) <= q.FieldItem {
+	if len(f) <= q.RepeatedField {
 		return f.String()
 	}
 
 	if !q.HasComponent {
-		if q.HasFieldItem {
-			return f.FieldItem(q.FieldItem).String()
+		if q.HasRepeatedField {
+			return f.RepeatedField(q.RepeatedField).String()
 		}
 
 		return f.String()
 	}
 
-	return f.FieldItem(q.FieldItem).query(q)
+	return f.RepeatedField(q.RepeatedField).query(q)
 }
 
 func (f Field) querySlice(q *Query) []string {
 	if !q.HasComponent {
-		if q.HasFieldItem {
-			return f.FieldItem(q.FieldItem).SliceOfStrings()
+		if q.HasRepeatedField {
+			return f.RepeatedField(q.RepeatedField).SliceOfStrings()
 		}
 
-		return f.FieldItem(0).SliceOfStrings()
+		return f.RepeatedField(0).SliceOfStrings()
 	}
 
-	return f.FieldItem(q.FieldItem).querySlice(q)
+	return f.RepeatedField(q.RepeatedField).querySlice(q)
 }
 
-func (f Field) FieldItem(index int) FieldItem {
+func (f Field) RepeatedField(index int) RepeatedField {
 	if index >= len(f) {
 		return nil
 	}
@@ -41,7 +41,7 @@ func (f Field) FieldItem(index int) FieldItem {
 	return f[index]
 }
 
-func (f Field) FieldItemPtr(index int) *FieldItem {
+func (f Field) RepeatedFieldPtr(index int) *RepeatedField {
 	if index >= len(f) {
 		return nil
 	}
@@ -66,11 +66,11 @@ func (f Field) SliceOfStrings() []string {
 func (f Field) setString(q *Query, value string) (Field, error) {
 	var err error
 
-	for len(f) < q.FieldItem+1 {
-		f = append(f, FieldItem{})
+	for len(f) < q.RepeatedField+1 {
+		f = append(f, RepeatedField{})
 	}
 
-	f[q.FieldItem], err = f[q.FieldItem].setString(q, value)
+	f[q.RepeatedField], err = f[q.RepeatedField].setString(q, value)
 
 	return f, err
 }
