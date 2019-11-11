@@ -1,6 +1,7 @@
 package hl7
 
 import (
+	"errors"
 	_ "fmt"
 	_ "github.com/davecgh/go-spew/spew"
 	"github.com/facebookgo/stackerr"
@@ -34,34 +35,43 @@ func (m Message) Segments(name string) []Segment {
 	return a
 }
 
-func (m Message) Segment(name string, index int) Segment {
-	i := 0
-	for _, s := range m {
-		if string(s[0][0][0][0]) == name {
-			if i == index {
-				return s
-			}
-
-			i++
-		}
+func (m Message) Segment(name string, offset int) Segment {
+	if index, err := m.SegmentIndex(name, offset); err == nil {
+		return m[index]
 	}
 
 	return nil
 }
 
-func (m Message) SegmentPtr(name string, index int) *Segment {
-	i := 0
-	for _, s := range m {
+func (m Message) SegmentIndex(name string, offset int) (int, error) {
+	currentOffset := 0
+	for index, s := range m {
 		if string(s[0][0][0][0]) == name {
-			if i == index {
-				return &s
+			if currentOffset == offset {
+				return index, nil
 			}
 
-			i++
+			currentOffset++
 		}
 	}
 
-	return nil
+	return -1, errors.New("Segment does not exists")
+}
+
+func (m *Message) SetSegment(name string, offset int, s Segment) error {
+	currentOffset := 0
+	for i := range *m {
+		if string((*m)[i][0][0][0][0]) == name {
+			if currentOffset == offset {
+				(*m)[i] = s
+				return nil
+			}
+
+			currentOffset++
+		}
+	}
+
+	return errors.New("Cannot set segment; segment does not exist")
 }
 
 func (m Message) Query(query string) (res string, err error) {
@@ -114,27 +124,15 @@ func (m *Message) SetString(query string, value string) error {
 		return stackerr.Wrap(err)
 	}
 
-	// queryStruct := struct {
-	// 	HasSegmentOffet bool
-	// 	HasField        bool
-	// 	HasFieldItem    bool
-	// 	HasComponent    bool
-	// 	HasSubcomponent bool
-	// }{
-	// 	q.HasSegmentOffset,
-	// 	q.HasField,
-	// 	q.HasFieldItem,
-	// 	q.HasComponent,
-	// 	q.HasSubComponent,
-	// }
+	index, err := m.SegmentIndex(q.Segment, q.SegmentOffset)
 
-	// spew.Dump(queryStruct)
+	if err != nil {
+		return stackerr.Wrap(err)
+	}
 
-	return m.setString(q, value)
-}
-
-func (m *Message) setString(q *Query, value string) error {
-	m.SegmentPtr(q.Segment, q.SegmentOffset).setString(q, value)
+	if (*m)[index], err = (*m)[index].setString(q, value); err != nil {
+		return stackerr.Wrap(err)
+	}
 
 	return nil
 }

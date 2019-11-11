@@ -50,11 +50,14 @@ func (f FieldItem) SliceOfStrings() []string {
 	return strs
 }
 
-func (f *FieldItem) setString(q *Query, value string) error {
-	if q.HasComponent {
-		return f.ComponentPtr(q.Component).setString(q, value)
+func (f FieldItem) setString(q *Query, value string) (FieldItem, error) {
+	var err error
+
+	for len(f) < q.Component+1 {
+		f = append(f, Component{})
 	}
 
-	*f = FieldItem{Component{Subcomponent(value)}}
-	return nil
+	f[q.Component], err = f[q.Component].setString(q, value)
+
+	return f, err
 }

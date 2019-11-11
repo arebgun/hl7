@@ -1,7 +1,7 @@
 package hl7
 
 import (
-	"errors"
+	// "errors"
 	"strings"
 )
 
@@ -63,19 +63,14 @@ func (f Field) SliceOfStrings() []string {
 	return strs
 }
 
-func (f *Field) setString(q *Query, value string) error {
-	if len(*f) <= q.FieldItem {
-		return errors.New("Not enough field items")
+func (f Field) setString(q *Query, value string) (Field, error) {
+	var err error
+
+	for len(f) < q.FieldItem+1 {
+		f = append(f, FieldItem{})
 	}
 
-	if !q.HasFieldItem {
-		if q.HasComponent {
-			return (*f)[0].ComponentPtr(q.Component).setString(q, value)
-		}
+	f[q.FieldItem], err = f[q.FieldItem].setString(q, value)
 
-		(*f)[0] = FieldItem{Component{Subcomponent(value)}}
-		return nil
-	}
-
-	return f.FieldItemPtr(q.FieldItem).setString(q, value)
+	return f, err
 }

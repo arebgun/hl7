@@ -42,13 +42,11 @@ func (c Component) Subcomponent(index int) string {
 	return string(c[index])
 }
 
-func (c *Component) setString(q *Query, value string) error {
-	if q.HasSubComponent {
-		(*c)[q.SubComponent] = Subcomponent(value)
-	} else {
-		*c = nil
-		*c = append(*c, Subcomponent(value))
+func (c Component) setString(q *Query, value string) (Component, error) {
+	for len(c) < q.SubComponent+1 {
+		c = append(c, Subcomponent(""))
 	}
 
-	return nil
+	c[q.SubComponent] = Subcomponent(value)
+	return c, nil
 }

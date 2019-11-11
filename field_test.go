@@ -4,17 +4,12 @@ import (
 	"testing"
 )
 
-func TestFieldSetString(t *testing.T) {
+func TestSetLastName(t *testing.T) {
 	m, _, _ := ParseMessage([]byte(longTestMessageContent))
 
 	expectectedLastName := "Wehr"
-	expectedBirthdate := "19900915"
 
 	if err := m.SetString("PID-5-1", expectectedLastName); err != nil {
-		t.Errorf("we caught: %s", err.Error())
-	}
-
-	if err := m.SetString("PID-7", expectedBirthdate); err != nil {
 		t.Errorf("we caught: %s", err.Error())
 	}
 
@@ -23,16 +18,26 @@ func TestFieldSetString(t *testing.T) {
 		t.Errorf("we caught: %s", err.Error())
 	}
 
-	birthdate, err := m.Query("PID-7")
+	if expectectedLastName != lastName {
+		t.Errorf("expected %s; got %s", expectectedLastName, lastName)
+	}
+}
+
+func TestSetExternalID(t *testing.T) {
+	m, _, _ := ParseMessage([]byte(longTestMessageContent))
+
+	expectedID := "12345"
+
+	if err := m.SetString("PID-2", expectedID); err != nil {
+		t.Errorf("we caught: %s", err.Error())
+	}
+
+	ID, err := m.Query("PID-2")
 	if err != nil {
 		t.Errorf("we caught: %s", err.Error())
 	}
 
-	if expectectedLastName != lastName {
-		t.Errorf("expected %s; got %s", expectectedLastName, lastName)
-	}
-
-	if expectedBirthdate != birthdate {
-		t.Errorf("expected %s; got %s", expectedBirthdate, birthdate)
+	if expectedID != ID {
+		t.Errorf("expected %s; got %s", expectedID, ID)
 	}
 }

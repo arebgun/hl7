@@ -54,14 +54,6 @@ func (s Segment) Field(index int) Field {
 	return s[index]
 }
 
-func (s Segment) FieldPtr(index int) *Field {
-	if index >= len(s) {
-		return nil
-	}
-
-	return &s[index]
-}
-
 func (s Segment) String() string {
 	return strings.Join(s.SliceOfStrigs(), fieldSeperator)
 }
@@ -76,24 +68,18 @@ func (s Segment) SliceOfStrigs() []string {
 	return strs
 }
 
-func (s *Segment) SetString(query string, value string) error {
-	q, err := ParseQuery(query)
-
-	if err != nil {
-		return stackerr.Wrap(err)
-	}
-
-	return s.setString(q, value)
-}
-
-func (s *Segment) setString(q *Query, value string) error {
-	if len(*s) <= q.Field+1 {
-		return errors.New("Not enough fields in segment")
-	}
-
+func (s Segment) setString(q *Query, value string) (Segment, error) {
 	if !q.HasField {
-		return errors.New("No field defined")
+		return nil, errors.New("No field defined")
 	}
 
-	return s.FieldPtr(q.Field+1).setString(q, value)
+	var err error
+
+	for len(s) < q.Field+2 {
+		s = append(s, Field{})
+	}
+
+	s[q.Field+1], err = s[q.Field+1].setString(q, value)
+
+	return s, err
 }
