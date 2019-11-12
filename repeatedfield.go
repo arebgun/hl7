@@ -9,7 +9,7 @@ func (f RepeatedField) query(q *Query) string {
 		return f.String()
 	}
 
-	return f.Component(q.Component).query(q)
+	return f[q.Component].query(q)
 }
 
 func (f RepeatedField) querySlice(q *Query) []string {
@@ -17,23 +17,7 @@ func (f RepeatedField) querySlice(q *Query) []string {
 		return f.SliceOfStrings()
 	}
 
-	return f.Component(q.Component + 1).querySlice(q)
-}
-
-func (f RepeatedField) Component(index int) Component {
-	if index >= len(f) {
-		return nil
-	}
-
-	return f[index]
-}
-
-func (f RepeatedField) ComponentPtr(index int) *Component {
-	if index >= len(f) {
-		return nil
-	}
-
-	return &f[index]
+	return f[q.Component].querySlice(q)
 }
 
 func (f RepeatedField) String() string {

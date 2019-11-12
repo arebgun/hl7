@@ -9,7 +9,7 @@ func (c Component) query(q *Query) string {
 		return c.String()
 	}
 
-	return c.RepeatedComponent(q.RepeatedComponent)
+	return string(c[q.RepeatedComponent])
 }
 
 func (c Component) querySlice(q *Query) []string {
@@ -32,14 +32,6 @@ func (c Component) SliceOfStrings() []string {
 	}
 
 	return strs
-}
-
-func (c Component) RepeatedComponent(index int) string {
-	if index >= len(c) {
-		return ""
-	}
-
-	return string(c[index])
 }
 
 func (c Component) setString(q *Query, value string) (Component, error) {

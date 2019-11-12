@@ -25,7 +25,7 @@ func (s Segment) query(q *Query) string {
 		return s.String()
 	}
 
-	return s.Field(q.Field + 1).query(q)
+	return s[q.Field+1].query(q)
 }
 
 func (s Segment) QuerySlice(query string) ([]string, error) {
@@ -43,15 +43,7 @@ func (s Segment) querySlice(q *Query) []string {
 		return s.SliceOfStrigs()
 	}
 
-	return s.Field(q.Field + 1).querySlice(q)
-}
-
-func (s Segment) Field(index int) Field {
-	if index >= len(s) {
-		return nil
-	}
-
-	return s[index]
+	return s[q.Field+1].querySlice(q)
 }
 
 func (s Segment) String() string {

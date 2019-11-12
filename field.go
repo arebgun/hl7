@@ -12,41 +12,25 @@ func (f Field) query(q *Query) string {
 
 	if !q.HasComponent {
 		if q.HasRepeatedField {
-			return f.RepeatedField(q.RepeatedField).String()
+			return f[q.RepeatedField].String()
 		}
 
 		return f.String()
 	}
 
-	return f.RepeatedField(q.RepeatedField).query(q)
+	return f[q.RepeatedField].query(q)
 }
 
 func (f Field) querySlice(q *Query) []string {
 	if !q.HasComponent {
 		if q.HasRepeatedField {
-			return f.RepeatedField(q.RepeatedField).SliceOfStrings()
+			return f[q.RepeatedField].SliceOfStrings()
 		}
 
-		return f.RepeatedField(0).SliceOfStrings()
+		return f[0].SliceOfStrings()
 	}
 
-	return f.RepeatedField(q.RepeatedField).querySlice(q)
-}
-
-func (f Field) RepeatedField(index int) RepeatedField {
-	if index >= len(f) {
-		return nil
-	}
-
-	return f[index]
-}
-
-func (f Field) RepeatedFieldPtr(index int) *RepeatedField {
-	if index >= len(f) {
-		return nil
-	}
-
-	return &f[index]
+	return f[q.RepeatedField].querySlice(q)
 }
 
 func (f Field) String() string {

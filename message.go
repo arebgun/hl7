@@ -58,22 +58,6 @@ func (m Message) SegmentIndex(name string, offset int) (int, error) {
 	return -1, errors.New("Segment does not exists")
 }
 
-func (m *Message) SetSegment(name string, offset int, s Segment) error {
-	currentOffset := 0
-	for i := range *m {
-		if string((*m)[i][0][0][0][0]) == name {
-			if currentOffset == offset {
-				(*m)[i] = s
-				return nil
-			}
-
-			currentOffset++
-		}
-	}
-
-	return errors.New("Cannot set segment; segment does not exist")
-}
-
 func (m Message) Query(query string) (res string, err error) {
 	q, err := ParseQuery(query)
 	if err != nil {
