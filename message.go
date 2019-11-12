@@ -1,10 +1,7 @@
 package hl7
 
 import (
-	"errors"
-	_ "fmt"
-	_ "github.com/davecgh/go-spew/spew"
-	"github.com/facebookgo/stackerr"
+	"fmt"
 	"strings"
 )
 
@@ -36,14 +33,14 @@ func (m Message) Segments(name string) []Segment {
 }
 
 func (m Message) Segment(name string, offset int) Segment {
-	if index, err := m.SegmentIndex(name, offset); err == nil {
+	if index, err := m.segmentIndex(name, offset); err == nil {
 		return m[index]
 	}
 
 	return nil
 }
 
-func (m Message) SegmentIndex(name string, offset int) (int, error) {
+func (m Message) segmentIndex(name string, offset int) (int, error) {
 	currentOffset := 0
 	for index, s := range m {
 		if string(s[0][0][0][0]) == name {
@@ -55,28 +52,31 @@ func (m Message) SegmentIndex(name string, offset int) (int, error) {
 		}
 	}
 
-	return -1, errors.New("Segment does not exists")
+	return -1, fmt.Errorf("segment %s does not exists", name)
 }
 
 func (m Message) Query(query string) (res string, err error) {
 	q, err := ParseQuery(query)
 	if err != nil {
-		return "", stackerr.Wrap(err)
+		return "", err
 	}
 
-	return m.query(q), nil
+	return m.query(q)
 }
 
-func (m Message) query(q *Query) string {
-	s := m.Segment(q.Segment, q.SegmentOffset)
+func (m Message) query(q *Query) (string, error) {
+	index, err := m.segmentIndex(q.Segment, q.SegmentOffset)
+	if err != nil {
+		return "", err
+	}
 
-	return s.query(q)
+	return m[index].query(q)
 }
 
 func (m Message) QuerySlice(query string) ([]string, error) {
 	q, err := ParseQuery(query)
 	if err != nil {
-		return []string{}, stackerr.Wrap(err)
+		return []string{}, err
 	}
 
 	return m.querySlice(q), nil
@@ -88,34 +88,28 @@ func (m Message) querySlice(q *Query) []string {
 }
 
 func (m Message) String() string {
-	return strings.Join(m.SliceOfStrings(), segmentSeperator)
-}
-
-func (m Message) SliceOfStrings() []string {
-	strs := []string{}
+	segmentStrings := []string{}
 
 	for _, s := range m {
-		strs = append(strs, s.String())
+		segmentStrings = append(segmentStrings, s.String())
 	}
 
-	return strs
+	return strings.Join(segmentStrings, segmentSeperator)
 }
 
 func (m *Message) SetString(query string, value string) error {
 	q, err := ParseQuery(query)
-
 	if err != nil {
-		return stackerr.Wrap(err)
+		return err
 	}
 
-	index, err := m.SegmentIndex(q.Segment, q.SegmentOffset)
-
+	index, err := m.segmentIndex(q.Segment, q.SegmentOffset)
 	if err != nil {
-		return stackerr.Wrap(err)
+		return err
 	}
 
 	if (*m)[index], err = (*m)[index].setString(q, value); err != nil {
-		return stackerr.Wrap(err)
+		return err
 	}
 
 	return nil

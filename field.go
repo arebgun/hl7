@@ -1,21 +1,21 @@
 package hl7
 
 import (
-	// "errors"
+	"fmt"
 	"strings"
 )
 
-func (f Field) query(q *Query) string {
+func (f Field) query(q *Query) (string, error) {
 	if len(f) <= q.RepeatedField {
-		return f.String()
+		return "", fmt.Errorf("field %d has no repeated field %d for query %s", q.Field+1, q.RepeatedField, q.String())
 	}
 
 	if !q.HasComponent {
 		if q.HasRepeatedField {
-			return f[q.RepeatedField].String()
+			return f[q.RepeatedField].String(), nil
 		}
 
-		return f.String()
+		return f.String(), nil
 	}
 
 	return f[q.RepeatedField].query(q)
@@ -40,8 +40,8 @@ func (f Field) String() string {
 func (f Field) SliceOfStrings() []string {
 	strs := []string{}
 
-	for _, fi := range f {
-		strs = append(strs, fi.String())
+	for _, repeated := range f {
+		strs = append(strs, repeated.String())
 	}
 
 	return strs

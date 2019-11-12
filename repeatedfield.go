@@ -1,12 +1,13 @@
 package hl7
 
 import (
+	"fmt"
 	"strings"
 )
 
-func (f RepeatedField) query(q *Query) string {
+func (f RepeatedField) query(q *Query) (string, error) {
 	if len(f) <= q.Component {
-		return f.String()
+		return "", fmt.Errorf("repeated field %d does not have component %d for query %s", q.RepeatedField, q.Component, q.String())
 	}
 
 	return f[q.Component].query(q)

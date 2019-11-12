@@ -1,15 +1,16 @@
 package hl7
 
 import (
+	"fmt"
 	"strings"
 )
 
-func (c Component) query(q *Query) string {
+func (c Component) query(q *Query) (string, error) {
 	if len(c) <= q.RepeatedComponent {
-		return c.String()
+		return "", fmt.Errorf("component %d does not have repeated component %d for query %s", q.Component, q.RepeatedComponent, q.String())
 	}
 
-	return string(c[q.RepeatedComponent])
+	return string(c[q.RepeatedComponent]), nil
 }
 
 func (c Component) querySlice(q *Query) []string {
