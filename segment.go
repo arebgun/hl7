@@ -46,6 +46,10 @@ func (s Segment) querySlice(q *Query) []string {
 }
 
 func (s Segment) String() string {
+	if s[0][0][0][0] == "MSH" {
+		return "MSH" + fieldSeperator + strings.Join(s[2:].SliceOfStrigs(), fieldSeperator)
+	}
+
 	return strings.Join(s.SliceOfStrigs(), fieldSeperator)
 }
 

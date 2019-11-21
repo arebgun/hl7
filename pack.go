@@ -45,7 +45,17 @@ func pack(in interface{}, setString func(query string, value string) error) erro
 		// 	}
 		case reflect.Struct:
 			if typeOf.Field(i).Type.PkgPath() == "time" && typeOf.Field(i).Type.Name() == "Time" {
-				str := valueOf.Field(i).Elem().Interface().(time.Time).Format(timeFormat)
+				format, ok := typeOf.Field(i).Tag.Lookup("format")
+
+				if !ok {
+					format = timeFormat
+				}
+
+				str := ""
+
+				if dateTime := valueOf.Field(i).Interface().(time.Time); !dateTime.IsZero() {
+					str = dateTime.Format(format)
+				}
 
 				if err := setString(path, str); err != nil {
 					return err
