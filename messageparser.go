@@ -23,6 +23,10 @@ type Delimiters struct {
 // ParseMessage takes input as a `[]byte`, and returns the whole message, the
 // control characters (as `*Delimiters`), and maybe an error.
 func ParseMessage(buf []byte) (Message, *Delimiters, error) {
+	return ParseMessageWithSeperator(buf, '\r')
+}
+
+func ParseMessageWithSeperator(buf []byte, sep byte) (Message, *Delimiters, error) {
 	// This is a sanity check, to make sure the message is long enough to
 	// contain a valid header. If it's less than eight bytes long, it can't
 	// possibly contain the required information.
@@ -162,7 +166,7 @@ func ParseMessage(buf []byte) (Message, *Delimiters, error) {
 		c := buf[i]
 
 		switch c {
-		case '\r':
+		case sep:
 			if !sawNewline {
 				commitSegment(true)
 			}

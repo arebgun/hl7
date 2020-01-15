@@ -22,7 +22,7 @@ func (c Component) querySlice(q *Query) []string {
 }
 
 func (c Component) String() string {
-	return strings.Join(c.SliceOfStrings(), repeatingComponentSeperator)
+	return strings.Join(c.SliceOfStrings(), string(repeatingComponentSeperator))
 }
 
 func (c Component) SliceOfStrings() []string {

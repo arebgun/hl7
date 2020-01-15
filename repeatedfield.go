@@ -22,7 +22,7 @@ func (f RepeatedField) querySlice(q *Query) []string {
 }
 
 func (f RepeatedField) String() string {
-	return strings.Join(f.SliceOfStrings(), componentSeperator)
+	return strings.Join(f.SliceOfStrings(), string(componentSeperator))
 }
 
 func (f RepeatedField) SliceOfStrings() []string {

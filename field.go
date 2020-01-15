@@ -34,7 +34,7 @@ func (f Field) querySlice(q *Query) []string {
 }
 
 func (f Field) String() string {
-	return strings.Join(f.SliceOfStrings(), repeatingFieldSeperator)
+	return strings.Join(f.SliceOfStrings(), string(repeatingFieldSeperator))
 }
 
 func (f Field) SliceOfStrings() []string {

@@ -46,11 +46,11 @@ func (s Segment) querySlice(q *Query) []string {
 }
 
 func (s Segment) String() string {
-	if s[0][0][0][0] == "MSH" {
-		return "MSH" + fieldSeperator + strings.Join(s[2:].SliceOfStrigs(), fieldSeperator)
+	if s.tag() == "MSH" {
+		return "MSH" + string(fieldSeperator) + strings.Join(s[2:].SliceOfStrigs(), string(fieldSeperator))
 	}
 
-	return strings.Join(s.SliceOfStrigs(), fieldSeperator)
+	return strings.Join(s.SliceOfStrigs(), string(fieldSeperator))
 }
 
 func (s Segment) SliceOfStrigs() []string {
@@ -77,4 +77,8 @@ func (s Segment) setString(q *Query, value string) (Segment, error) {
 	s[q.Field+1], err = s[q.Field+1].setString(q, value)
 
 	return s, err
+}
+
+func (s Segment) tag() string {
+	return string(s[0][0][0][0])
 }

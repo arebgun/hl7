@@ -13,11 +13,11 @@ type Component []RepeatedComponent
 type RepeatedComponent string
 
 const (
-	segmentSeperator            = "\n"
-	fieldSeperator              = "|"
-	repeatingFieldSeperator     = "~"
-	componentSeperator          = "^"
-	repeatingComponentSeperator = "&"
+	segmentSeperator            = '\n'
+	fieldSeperator              = '|'
+	repeatingFieldSeperator     = '~'
+	componentSeperator          = '^'
+	repeatingComponentSeperator = '&'
 )
 
 func (m Message) Segments(name string) []Segment {
@@ -94,7 +94,7 @@ func (m Message) String() string {
 		segmentStrings = append(segmentStrings, s.String())
 	}
 
-	return strings.Join(segmentStrings, segmentSeperator)
+	return strings.Join(segmentStrings, string(segmentSeperator))
 }
 
 func (m *Message) SetString(query string, value string) error {
