@@ -14,7 +14,7 @@ PV1||O|168 ~219~C~PMA^^^^^^^^^||||277^ALLEN MYLASTNAME^BONNIE^^^^|||||||||| ||26
 func TestString(t *testing.T) {
 	m, _, _ := ParseMessage([]byte(message))
 
-	expected := "PID||0493575^^^2^ID 1|454721||DOE^JOHN^^^|DOE^JOHN^^^|19480203|M||B|254 MYSTREET AVE^^MYTOWN^OH^44123^USA||(216)123-4567|||M|NON|400003403~1129086"
+	expected := "PID||0493575^^^2^ID 1|454721||DOE^JOHN^^^^|DOE^JOHN^^^^|19480203|M||B|254 MYSTREET AVE^^MYTOWN^OH^44123^USA||(216)123-4567|||M|NON|400003403~1129086"
 	got := m.Segment("PID", 0).String()
 
 	if got != expected {
@@ -35,7 +35,7 @@ func TestSliceOfStrings(t *testing.T) {
 
 	m, _, _ := ParseMessage([]byte(message))
 
-	expected := []string{"PID", "", "0493575^^^2^ID 1", "454721", "", "DOE^JOHN^^^", "DOE^JOHN^^^", "19480203", "M", "", "B", "254 MYSTREET AVE^^MYTOWN^OH^44123^USA", "", "(216)123-4567", "", "", "M", "NON", "400003403~1129086"}
+	expected := []string{"PID", "", "0493575^^^2^ID 1", "454721", "", "DOE^JOHN^^^^", "DOE^JOHN^^^^", "19480203", "M", "", "B", "254 MYSTREET AVE^^MYTOWN^OH^44123^USA", "", "(216)123-4567", "", "", "M", "NON", "400003403~1129086"}
 	got := m.Segment("PID", 0).SliceOfStrigs()
 
 	if !equal(expected, got) {

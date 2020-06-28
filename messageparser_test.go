@@ -62,7 +62,7 @@ func TestParseTwoSegments(t *testing.T) {
 
 	m, d, err := ParseMessage([]byte(strings.Join([]string{
 		`MSH|^~\&|IPM|1919|SUPERHOSPITAL|1919|20160101000000||ADT^A08|555544444|D|2.4|||AL|NE`,
-		`EVN|A08|20160101000001||BATMAN_U|SHBOLTONM^Bolton, Michael^^^^^^`,
+		`EVN|A08|20160101000001||BATMAN_U|SHBOLTONM^Bolton, Michael^^^^^^|STUFF`,
 	}, "\r")))
 	a.NoError(err)
 	a.Equal(&Delimiters{'|', '^', '~', '\\', '&'}, d)
@@ -105,8 +105,12 @@ func TestParseTwoSegments(t *testing.T) {
 				nil,
 				nil,
 			}},
+			Field{RepeatedField{Component{"STUFF"}}},
 		},
 	}, m)
+	evn, err := m.QuerySlice("EVN-5")
+	a.NoError(err)
+	a.Equal(8, len(evn))
 }
 
 func TestParseSampleContent(t *testing.T) {
@@ -137,8 +141,8 @@ func TestParseSampleContent(t *testing.T) {
 			Field{RepeatedField{Component{"0493575"}, nil, nil, Component{"2"}, Component{"ID 1"}}},
 			Field{RepeatedField{Component{"454721"}}},
 			nil,
-			Field{RepeatedField{Component{"DOE"}, Component{"JOHN"}, nil, nil, nil}},
-			Field{RepeatedField{Component{"DOE"}, Component{"JOHN"}, nil, nil, nil}},
+			Field{RepeatedField{Component{"DOE"}, Component{"JOHN"}, nil, nil, nil, nil}},
+			Field{RepeatedField{Component{"DOE"}, Component{"JOHN"}, nil, nil, nil, nil}},
 			Field{RepeatedField{Component{"19480203"}}},
 			Field{RepeatedField{Component{"M"}}},
 			nil,
@@ -154,7 +158,7 @@ func TestParseSampleContent(t *testing.T) {
 		Segment{
 			Field{RepeatedField{Component{"NK1"}}},
 			nil,
-			Field{RepeatedField{Component{"ROE"}, Component{"MARIE"}, nil, nil, nil}},
+			Field{RepeatedField{Component{"ROE"}, Component{"MARIE"}, nil, nil, nil, nil}},
 			Field{RepeatedField{Component{"SPO"}}},
 			nil,
 			Field{RepeatedField{Component{"(216)123-4567"}}},
@@ -191,11 +195,11 @@ func TestParseSampleContent(t *testing.T) {
 			Field{RepeatedField{Component{"PV1"}}},
 			nil,
 			Field{RepeatedField{Component{"O"}}},
-			Field{RepeatedField{Component{"168 "}}, RepeatedField{Component{"219"}}, RepeatedField{Component{"C"}}, RepeatedField{Component{"PMA"}, nil, nil, nil, nil, nil, nil, nil, nil}},
+			Field{RepeatedField{Component{"168 "}}, RepeatedField{Component{"219"}}, RepeatedField{Component{"C"}}, RepeatedField{Component{"PMA"}, nil, nil, nil, nil, nil, nil, nil, nil, nil}},
 			nil,
 			nil,
 			nil,
-			Field{RepeatedField{Component{"277"}, Component{"ALLEN MYLASTNAME"}, Component{"BONNIE"}, nil, nil, nil}},
+			Field{RepeatedField{Component{"277"}, Component{"ALLEN MYLASTNAME"}, Component{"BONNIE"}, nil, nil, nil, nil}},
 			nil,
 			nil,
 			nil,

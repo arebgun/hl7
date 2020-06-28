@@ -174,6 +174,9 @@ func ParseMessageWithSeperator(buf []byte, sep byte) (Message, *Delimiters, erro
 			lastCs = false
 			sawNewline = true
 		case fs:
+			if lastCs {
+				commitComponent(true)
+			}
 			lastCs = false
 			sawNewline = false
 			commitField(true)
