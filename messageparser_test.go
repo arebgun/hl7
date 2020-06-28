@@ -62,7 +62,7 @@ func TestParseTwoSegments(t *testing.T) {
 
 	m, d, err := ParseMessage([]byte(strings.Join([]string{
 		`MSH|^~\&|IPM|1919|SUPERHOSPITAL|1919|20160101000000||ADT^A08|555544444|D|2.4|||AL|NE`,
-		`EVN|A08|20160101000001||BATMAN_U|SHBOLTONM^Bolton, Michael^^^^^^USERS`,
+		`EVN|A08|20160101000001||BATMAN_U|SHBOLTONM^Bolton, Michael^^^^^^`,
 	}, "\r")))
 	a.NoError(err)
 	a.Equal(&Delimiters{'|', '^', '~', '\\', '&'}, d)
@@ -103,7 +103,7 @@ func TestParseTwoSegments(t *testing.T) {
 				nil,
 				nil,
 				nil,
-				Component{"USERS"},
+				nil,
 			}},
 		},
 	}, m)
