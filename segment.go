@@ -20,7 +20,7 @@ func (s Segment) query(q *Query) (string, error) {
 		return "", fmt.Errorf("field not specified for query %s", q.String())
 	}
 
-	if len(s) <= q.Field {
+	if len(s) <= q.Field+1 {
 		return "", fmt.Errorf("segment %s does not have field %d for query %s", q.Segment, q.Field+1, q.String())
 	}
 
@@ -46,7 +46,7 @@ func (s Segment) querySlice(q *Query) []string {
 }
 
 func (s Segment) String() string {
-	if s.tag() == "MSH" {
+	if s.Tag() == "MSH" {
 		return "MSH" + string(fieldSeperator) + strings.Join(s[2:].SliceOfStrigs(), string(fieldSeperator))
 	}
 
@@ -79,6 +79,6 @@ func (s Segment) setString(q *Query, value string) (Segment, error) {
 	return s, err
 }
 
-func (s Segment) tag() string {
+func (s Segment) Tag() string {
 	return string(s[0][0][0][0])
 }
