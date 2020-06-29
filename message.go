@@ -24,7 +24,7 @@ func (m Message) Segments(name string) []Segment {
 	var a []Segment
 
 	for _, s := range m {
-		if string(s[0][0][0][0]) == name {
+		if s.Tag() == name {
 			a = append(a, s)
 		}
 	}
@@ -43,7 +43,7 @@ func (m Message) Segment(name string, offset int) Segment {
 func (m Message) segmentIndex(name string, offset int) (int, error) {
 	currentOffset := 0
 	for index, s := range m {
-		if string(s[0][0][0][0]) == name {
+		if s.Tag() == name {
 			if currentOffset == offset {
 				return index, nil
 			}
