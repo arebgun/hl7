@@ -10,6 +10,13 @@ func (f RepeatedField) query(q *Query) (string, error) {
 		return "", fmt.Errorf("repeated field %d does not have component %d for query %s", q.RepeatedField, q.Component, q.String())
 	}
 
+	if q.IsRestComponent {
+		if len(f) <= q.Component+1 {
+			return "", fmt.Errorf("repeated field %d does not have component %d for query %s", q.RepeatedField, q.Component+1, q.String())
+		}
+		return f[q.Component+1:].String(), nil
+	}
+
 	return f[q.Component].query(q)
 }
 

@@ -10,17 +10,20 @@ type Query struct {
 	HasSegmentOffset bool
 	SegmentOffset    int
 
-	HasField bool
-	Field    int
+	HasField    bool
+	IsRestField bool
+	Field       int
 
 	HasRepeatedField bool
 	RepeatedField    int
 
-	HasComponent bool
-	Component    int
+	HasComponent    bool
+	IsRestComponent bool
+	Component       int
 
-	HasRepeatedComponent bool
-	RepeatedComponent    int
+	HasRepeatedComponent    bool
+	IsRestRepeatedComponent bool
+	RepeatedComponent       int
 }
 
 func NewQuery(segment string, segmentOffset, field, repeatedField, component, repeatedComponent int) Query {

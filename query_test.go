@@ -73,7 +73,116 @@ OBX|1|ST|30975-7^Mfr./Imm. Proj. report no.^LN||12345678|
 OBX|2|TS|30976-5^Date received by manufacturer/immunization project^LN||12345678|
 OBX|3|CE|30977-3^15 day report^LN||N^No^HL70136|
 OBX|4|CE|30978-1^Report type^LN||IN^Initial^NIP010|
+TST|1a&2a&3a&4a^5a^6a~1b&2b&3b&4b^5b^6b
 `, "\n", "\r", -1)
+
+func TestSegmentParsingViaQuery(t *testing.T) {
+	a := assert.New(t)
+
+	m, d, err := ParseMessage([]byte(longTestMessageContent))
+	a.NoError(err)
+
+	pidSegment := m.Segment("PID", 0)
+	a.NotEmpty(pidSegment)
+
+	pidSegmentFields := pidSegment.SliceOfStrigs()
+	a.Len(pidSegmentFields, 14)
+
+	firstRFieldStr := pidSegment[3].String()
+	a.Equal("1234^^^^SR~1234-12^^^^LR~00725^^^^MR", firstRFieldStr)
+
+	firstRFieldSlice := pidSegment[3].SliceOfStrings()
+	a.Equal([]string{"1234^^^^SR", "1234-12^^^^LR", "00725^^^^MR"}, firstRFieldSlice)
+
+	pidRFieldStrViaQuery, err := m.Query("PID-3")
+	a.NoError(err)
+	a.Equal("1234^^^^SR~1234-12^^^^LR~00725^^^^MR", pidRFieldStrViaQuery)
+
+	pidRFieldSliceViaQuery, err := m.QuerySlice("PID-3")
+	a.NoError(err)
+	a.Equal([]string{"1234^^^^SR", "1234-12^^^^LR", "00725^^^^MR"}, pidRFieldSliceViaQuery)
+
+	pidRFieldFirstRepetitionStrViaQuery, err := m.Query("PID-3-1")
+	a.NoError(err)
+	a.Equal("1234~1234-12~00725", pidRFieldFirstRepetitionStrViaQuery)
+
+	pidRFieldFirstRepetitionSliceViaQuery, err := m.QuerySlice("PID-3-1")
+	a.NoError(err)
+	a.Equal([]string{"1234", "1234-12", "00725"}, pidRFieldFirstRepetitionSliceViaQuery)
+
+	pidRFieldLastRepetitionStrViaQuery, err := m.Query("PID-3-5")
+	a.NoError(err)
+	a.Equal("SR~LR~MR", pidRFieldLastRepetitionStrViaQuery)
+
+	pidRFieldLastRepetitionSliceViaQuery, err := m.QuerySlice("PID-3-5")
+	a.NoError(err)
+	a.Equal([]string{"SR", "LR", "MR"}, pidRFieldLastRepetitionSliceViaQuery)
+
+	obx11 := m.Segment("OBX", 11)
+
+	obx3Str, err := obx11.Query("OBX-3")
+	a.NoError(err)
+	a.Equal("30955-9&30957-5^Manufacturer^LN", obx3Str)
+
+	obx3Slice, err := obx11.QuerySlice("OBX-3")
+	a.NoError(err)
+	a.Equal([]string{"30955-9&30957-5", "Manufacturer", "LN"}, obx3Slice)
+
+	obx31Str, err := obx11.Query("OBX-3-1")
+	a.NoError(err)
+	a.Equal("30955-9&30957-5", obx31Str)
+
+	obx31Slice, err := obx11.QuerySlice("OBX-3-1")
+	a.NoError(err)
+	a.Equal([]string{"30955-9&30957-5"}, obx31Slice)
+
+	obx311Str, err := obx11.Query("OBX-3-1-1")
+	a.NoError(err)
+	a.Equal("30955-9", obx311Str)
+
+	obx311Slice, err := obx11.QuerySlice("OBX-3-1-1")
+	a.NoError(err)
+	a.Equal([]string{"30955-9"}, obx311Slice)
+
+	obx312Str, err := obx11.Query("OBX-3-1-2")
+	a.NoError(err)
+	a.Equal("30957-5", obx312Str)
+
+	obx312Slice, err := obx11.QuerySlice("OBX-3-1-2")
+	a.NoError(err)
+	a.Equal([]string{"30957-5"}, obx312Slice)
+
+	// OBX 3 >1
+	obx3Slice, err = obx11.QuerySlice("OBX-3")
+	a.NoError(err)
+	a.Equal("Manufacturer^LN", strings.Join(obx3Slice[1:], string(d.Component)))
+
+	// OBX >3
+	obx3Str, err = obx11.Query("OBX->3")
+	a.NoError(err)
+	a.Equal("1|MSD^Merck^MVX", obx3Str)
+
+	obx3Slice, err = obx11.QuerySlice("OBX->3")
+	a.NoError(err)
+	a.Equal([]string{"1", "MSD^Merck^MVX"}, obx3Slice)
+
+	// OBX 3 >1
+	obx3Str, err = obx11.Query("OBX-3->1")
+	a.NoError(err)
+	a.Equal("Manufacturer^LN", obx3Str)
+
+	obx3Slice, err = obx11.QuerySlice("OBX-3->1")
+	a.NoError(err)
+	a.Equal([]string{"Manufacturer^LN"}, obx3Slice)
+
+	pidRFieldStrViaQuery, err = m.Query("PID-3->1")
+	a.NoError(err)
+	a.Equal("^^^SR~^^^LR~^^^MR", pidRFieldStrViaQuery)
+
+	pidRFieldSliceViaQuery, err = m.QuerySlice("PID-3->1")
+	a.NoError(err)
+	a.Equal([]string{"^^^SR", "^^^LR", "^^^MR"}, pidRFieldSliceViaQuery)
+}
 
 type countTestCase struct {
 	q string

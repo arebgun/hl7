@@ -162,7 +162,7 @@ func ParseMessageWithSeperator(buf []byte, sep byte) (Message, *Delimiters, erro
 	// themselves.
 
 	sawNewline := false
-	lastCs := false
+	lastCs, lastRs := false, false
 	for i, j := 9, len(buf); i < j; i++ {
 		c := buf[i]
 
@@ -172,28 +172,36 @@ func ParseMessageWithSeperator(buf []byte, sep byte) (Message, *Delimiters, erro
 				commitSegment(true)
 			}
 			lastCs = false
+			lastRs = false
 			sawNewline = true
 		case fs:
 			if lastCs {
 				commitComponent(true)
+			} else if lastRs {
+				commitRepeatedField(true)
 			}
 			lastCs = false
+			lastRs = false
 			sawNewline = false
 			commitField(true)
 		case rs:
 			lastCs = false
+			lastRs = true
 			sawNewline = false
 			commitRepeatedField(true)
 		case cs:
 			lastCs = true
+			lastRs = false
 			sawNewline = false
 			commitComponent(true)
 		case ss:
 			lastCs = false
+			lastRs = false
 			sawNewline = false
 			commitBuffer(true)
 		default:
 			lastCs = false
+			lastRs = false
 			sawNewline = false
 			s = append(s, c)
 		}

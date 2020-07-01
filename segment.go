@@ -24,6 +24,13 @@ func (s Segment) query(q *Query) (string, error) {
 		return "", fmt.Errorf("segment %s does not have field %d for query %s", q.Segment, q.Field+1, q.String())
 	}
 
+	if q.IsRestField {
+		if len(s) <= q.Field+2 {
+			return "", fmt.Errorf("segment %s does not have field %d for query %s", q.Segment, q.Field+2, q.String())
+		}
+		return strings.Join(s.SliceOfStrigs()[q.Field+2:], string(fieldSeperator)), nil
+	}
+
 	return s[q.Field+1].query(q)
 }
 
@@ -42,6 +49,12 @@ func (s Segment) querySlice(q *Query) []string {
 		return s.SliceOfStrigs()
 	}
 
+	if q.IsRestField {
+		if len(s) <= q.Field+2 {
+			return []string{}
+		}
+		return s.SliceOfStrigs()[q.Field+2:]
+	}
 	return s[q.Field+1].querySlice(q)
 }
 

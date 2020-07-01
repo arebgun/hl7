@@ -10,6 +10,9 @@ func (c Component) query(q *Query) (string, error) {
 		return "", fmt.Errorf("component %d does not have repeated component %d for query %s", q.Component, q.RepeatedComponent, q.String())
 	}
 
+	if !q.HasRepeatedComponent {
+		return c.String(), nil
+	}
 	return string(c[q.RepeatedComponent]), nil
 }
 

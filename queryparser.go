@@ -23,7 +23,7 @@ func ParseQuery(s string) (*Query, error) {
 		return &q, nil
 	}
 
-	if err := parseQueryNumber(s, &offset, &q.HasField, &q.Field); err != nil {
+	if err := parseQueryNumber(s, &offset, &q.HasField, &q.IsRestField, &q.Field); err != nil {
 		return nil, err
 	}
 	if offset == len(s) {
@@ -37,14 +37,14 @@ func ParseQuery(s string) (*Query, error) {
 		return &q, nil
 	}
 
-	if err := parseQueryNumber(s, &offset, &q.HasComponent, &q.Component); err != nil {
+	if err := parseQueryNumber(s, &offset, &q.HasComponent, &q.IsRestComponent, &q.Component); err != nil {
 		return nil, err
 	}
 	if offset == len(s) {
 		return &q, nil
 	}
 
-	if err := parseQueryNumber(s, &offset, &q.HasRepeatedComponent, &q.RepeatedComponent); err != nil {
+	if err := parseQueryNumber(s, &offset, &q.HasRepeatedComponent, &q.IsRestRepeatedComponent, &q.RepeatedComponent); err != nil {
 		return nil, err
 	}
 	if offset == len(s) {
@@ -104,9 +104,13 @@ loop:
 	return nil
 }
 
-func parseQueryNumber(s string, o *int, b *bool, v *int) error {
+func parseQueryNumber(s string, o *int, b *bool, rb *bool, v *int) error {
 	if s[*o] != '-' {
 		return nil
+	}
+	if s[*o+1] == '>' {
+		*rb = true
+		*o++
 	}
 
 	var e int

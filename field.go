@@ -18,7 +18,13 @@ func (f Field) query(q *Query) (string, error) {
 		return f.String(), nil
 	}
 
-	return f[q.RepeatedField].query(q)
+	var result []string
+	for _, rfield := range f {
+		component, _ := rfield.query(q)
+		result = append(result, component)
+	}
+
+	return strings.Join(result, string(repeatingFieldSeperator)), nil
 }
 
 func (f Field) querySlice(q *Query) []string {
@@ -27,10 +33,25 @@ func (f Field) querySlice(q *Query) []string {
 			return f[q.RepeatedField].SliceOfStrings()
 		}
 
-		return f[0].SliceOfStrings()
+		// non repeating
+		if len(f) == 1 {
+			return f[0].querySlice(q)
+		}
+		// repeating
+		var result []string
+		for _, rfield := range f {
+			result = append(result, rfield.String())
+		}
+		return result
 	}
 
-	return f[q.RepeatedField].querySlice(q)
+	var result []string
+	for _, rfield := range f {
+		component, _ := rfield.query(q)
+		result = append(result, component)
+	}
+
+	return result
 }
 
 func (f Field) String() string {
