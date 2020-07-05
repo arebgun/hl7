@@ -27,6 +27,8 @@ func ParseMessage(buf []byte) (Message, *Delimiters, error) {
 }
 
 func ParseMessageWithSeperator(buf []byte, sep byte) (Message, *Delimiters, error) {
+	buf = bytes.Trim(buf, "\r\n")
+
 	// This is a sanity check, to make sure the message is long enough to
 	// contain a valid header. If it's less than eight bytes long, it can't
 	// possibly contain the required information.
@@ -266,5 +268,5 @@ func unescape(b []byte, d *Delimiters) []byte {
 		}
 	}
 
-	return r[:j]
+	return bytes.Trim(r[:j], "\r\n")
 }

@@ -113,6 +113,59 @@ func TestParseTwoSegments(t *testing.T) {
 	a.Equal(8, len(evn))
 }
 
+func TestParseTwoSegmentsWithLineFeedAndCarriageReturn(t *testing.T) {
+	a := assert.New(t)
+
+	m, d, err := ParseMessage([]byte("MSH|^~\\&|IPM|1919|SUPERHOSPITAL|1919|20160101000000||ADT^A08|555544444|D|2.4|||AL|NE\r\nEVN|A08|20160101000001||BATMAN_U|SHBOLTONM^Bolton, Michael^^^^^^|STUFF"))
+	a.NoError(err)
+	a.Equal(&Delimiters{'|', '^', '~', '\\', '&'}, d)
+	a.Equal(Message{
+		Segment{
+			Field{RepeatedField{Component{"MSH"}}},
+			Field{RepeatedField{Component{"|"}}},
+			Field{RepeatedField{Component{"^~\\&"}}},
+			Field{RepeatedField{Component{"IPM"}}},
+			Field{RepeatedField{Component{"1919"}}},
+			Field{RepeatedField{Component{"SUPERHOSPITAL"}}},
+			Field{RepeatedField{Component{"1919"}}},
+			Field{RepeatedField{Component{"20160101000000"}}},
+			nil,
+			Field{RepeatedField{
+				Component{"ADT"},
+				Component{"A08"},
+			}},
+			Field{RepeatedField{Component{"555544444"}}},
+			Field{RepeatedField{Component{"D"}}},
+			Field{RepeatedField{Component{"2.4"}}},
+			nil,
+			nil,
+			Field{RepeatedField{Component{"AL"}}},
+			Field{RepeatedField{Component{"NE"}}},
+		},
+		Segment{
+			Field{RepeatedField{Component{"EVN"}}},
+			Field{RepeatedField{Component{"A08"}}},
+			Field{RepeatedField{Component{"20160101000001"}}},
+			nil,
+			Field{RepeatedField{Component{"BATMAN_U"}}},
+			Field{RepeatedField{
+				Component{"SHBOLTONM"},
+				Component{"Bolton, Michael"},
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+			}},
+			Field{RepeatedField{Component{"STUFF"}}},
+		},
+	}, m)
+	evn, err := m.QuerySlice("EVN-5")
+	a.NoError(err)
+	a.Equal(8, len(evn))
+}
+
 func TestParseSampleContent(t *testing.T) {
 	a := assert.New(t)
 
